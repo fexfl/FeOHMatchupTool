@@ -3,7 +3,8 @@ use std::{fs, path::PathBuf};
 pub mod champion_struct;
 
 fn get_file_location() -> PathBuf {
-    PathBuf::from("C:\\Users\\fexfl\\Documents\\GitHub\\FEOHMatchupTool\\feoh_matchup_tool\\data\\matchups.json")
+    //PathBuf::from("C:\\Users\\fexfl\\Documents\\GitHub\\FEOHMatchupTool\\feoh_matchup_tool\\data\\matchups.json")
+    PathBuf::from(".\\data\\matchups.json")
 }
 
 pub fn read_file() -> Vec<champion_struct::Champion> {
