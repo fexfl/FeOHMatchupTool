@@ -9,6 +9,7 @@ pub struct Champion {
 }
 
 impl Champion {
+    /*
     pub fn print_counters(&self) -> String{
         let mut out_string = String::from("Counters:");
         for cntr in &self.counters {
@@ -18,15 +19,17 @@ impl Champion {
         }
         return out_string;
     }
-
+    */
     pub fn equals(&self, other: &String) -> bool {
         self.name == String::from(other)
     }
-
+    /*
     pub fn get_champion_with_name<'a>(input: &'a String, vect: &'a Vec<Champion>) -> &'a Champion {
         let index = vect.iter().position(|&r| r.equals(input)).unwrap();
         return &vect[index];
     }
+    */
+    
 }
 
 impl std::fmt::Display for Champion {
@@ -65,7 +68,7 @@ impl MatchupSafety {
         }
     }
 
-    fn ms_to_int(&self) -> usize {
+    fn _ms_to_int(&self) -> usize {
         match self {
             Self::Playable => 0,
             Self::Normal => 1,

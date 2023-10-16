@@ -1,16 +1,17 @@
 use iced::widget::{column, text, combo_box, container, scrollable, vertical_space};
 use iced::{Alignment, Element, Sandbox, Length};
-use crate::matchup_data_reader::{read_file as read_file, self};
-use crate::matchup_data_reader::champion_struct::Champion as Champion;
+use crate::matchup_data_reader::champion_struct::Champion;
+use crate::matchup_data_reader::read_file as read_file;
 
 pub struct MatchupTool {
-    champions: combo_box::State<String>,
-    champion_array: Vec<Champion>,
-    selected_champion: Option<String>,
+    champions: combo_box::State<ChampEnum>,
+    selected_champion: Option<ChampEnum>,
     text: String,
+    champion_obj_array: Vec<Champion>,
 }
 
 impl MatchupTool {
+    /*
     fn get_champion_refs(champvec: &Vec<Champion>) -> Vec<&Champion> {
         let mut out_vec = vec![];
         for itr in champvec {
@@ -34,12 +35,27 @@ impl MatchupTool {
         }
         return out_vec;
     }
+    */
+    pub fn get_champion_from_enum(&self, champ: ChampEnum) -> &Champion {
+        let index = self.champion_obj_array.iter().position(|struct_obj| struct_obj.equals(&champ.to_string())).unwrap();
+        return &self.champion_obj_array[index];
+    }
+
+    pub fn print_counters(&self, champ: &Champion) -> String {
+        let mut out_string = String::from("Counters:");
+        for cntr in &champ.counters {
+            let (st, _ms) = cntr;
+            out_string.push_str(" ");
+            out_string.push_str(&st);
+        }
+        return out_string;
+    }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Message {
-    Selected(String),
-    OptionHovered(String),
+    Selected(ChampEnum),
+    OptionHovered(ChampEnum),
     Closed,
 }
 
@@ -48,10 +64,10 @@ impl Sandbox for MatchupTool {
 
     fn new() -> Self {
         Self {
-            champion_array: read_file(),
-            champions: combo_box::State::new(MatchupTool::create_name_array(&mut read_file())),
+            champions: combo_box::State::new(ChampEnum::ALL.to_vec()),
             selected_champion: None,
             text: String::new(),
+            champion_obj_array: read_file(),
         }
     }
 
@@ -90,14 +106,12 @@ impl Sandbox for MatchupTool {
     fn update(&mut self, message: Message) {
         match message {
             Message::Selected(obj) => {
-                let index = self.champion_array.iter().position(|r| r.equals(&obj)).unwrap();
-                self.text = self.champion_array[index].print_counters();
                 self.selected_champion = Some(obj);
+                self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
                 self.champions.unfocus();
             }
             Message::OptionHovered(obj) => {
-                let index = self.champion_array.iter().position(|r| r.equals(&obj)).unwrap();
-                self.text = self.champion_array[index].print_counters();
+                self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
             }
             Message::Closed => {
                 //self.text = self
@@ -109,9 +123,9 @@ impl Sandbox for MatchupTool {
     }
 }
 
-/*
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum Champion {
+pub enum ChampEnum {
     #[default]
     Aatrox,
     Ahri,
@@ -122,45 +136,25 @@ pub enum Champion {
     Anivia,
 }
 
-impl Champion {
-    const ALL: [Champion; 7] = [
-        Champion::Aatrox,
-        Champion::Ahri,
-        Champion::Akali,
-        Champion::Akshan,
-        Champion::Alistar,
-        Champion::Amumu,
-        Champion::Anivia,
+impl ChampEnum {
+    const ALL: [ChampEnum; 7] = [
+        ChampEnum::Aatrox,
+        ChampEnum::Ahri,
+        ChampEnum::Akali,
+        ChampEnum::Akshan,
+        ChampEnum::Alistar,
+        ChampEnum::Amumu,
+        ChampEnum::Anivia,
     ];
-
-    fn test(&self) -> &str {
-        match self {
-            Champion::Aatrox => "aa",
-            Champion::Ahri => "ah",
-            Champion::Akali => "ak",
-            Champion::Akshan => "aks",
-            Champion::Alistar => "al",
-            Champion::Amumu => "am",
-            Champion::Anivia => "an",
-        }
-    }
 }
 
-impl std::fmt::Display for Champion {
+impl std::fmt::Display for ChampEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
-            match self {
-                Champion::Aatrox => "Aatrox",
-                Champion::Ahri => "Ahri",
-                Champion::Akali => "Akali",
-                Champion::Akshan => "Akshan",
-                Champion::Alistar => "Alistar",
-                Champion::Amumu => "Amumu",
-                Champion::Anivia => "Anivia",
-            }
+            self
         )
     }
 }
-*/
+
