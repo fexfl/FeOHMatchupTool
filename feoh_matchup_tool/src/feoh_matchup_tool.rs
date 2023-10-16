@@ -1,19 +1,45 @@
 use iced::widget::{column, text, combo_box, container, scrollable, vertical_space};
 use iced::{Alignment, Element, Sandbox, Length};
+use crate::matchup_data_reader::{read_file as read_file, self};
+use crate::matchup_data_reader::champion_struct::Champion as Champion;
 
 pub struct MatchupTool {
-    champions: combo_box::State<Champion>,
-    selected_champion: Option<Champion>,
+    champions: combo_box::State<String>,
+    champion_array: Vec<Champion>,
+    selected_champion: Option<String>,
     text: String,
-    value: i32,
 }
 
-#[derive(Debug, Clone, Copy)]
+impl MatchupTool {
+    fn get_champion_refs(champvec: &Vec<Champion>) -> Vec<&Champion> {
+        let mut out_vec = vec![];
+        for itr in champvec {
+            out_vec.push(itr);
+        }
+        return out_vec;
+    }
+
+    fn create_id_array(champvec: &Vec<Champion>) -> Vec<usize> {
+        let mut out_vec = vec![];
+        for itr in champvec {
+            out_vec.push(itr.id);
+        }
+        return out_vec;
+    }
+
+    fn create_name_array(champvec: &mut Vec<Champion>) -> Vec<String> {
+        let mut out_vec = vec![];
+        for itr in champvec {
+            out_vec.push(itr.name);
+        }
+        return out_vec;
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum Message {
-    IncrementPressed,
-    DecrementPressed,
-    Selected(Champion),
-    OptionHovered(Champion),
+    Selected(String),
+    OptionHovered(String),
     Closed,
 }
 
@@ -22,8 +48,8 @@ impl Sandbox for MatchupTool {
 
     fn new() -> Self {
         Self {
-            value: 0,
-            champions: combo_box::State::new(Champion::ALL.to_vec()),
+            champion_array: read_file(),
+            champions: combo_box::State::new(MatchupTool::create_name_array(&mut read_file())),
             selected_champion: None,
             text: String::new(),
         }
@@ -45,8 +71,8 @@ impl Sandbox for MatchupTool {
         .width(250);
 
         let content = column![
+            "Counters",
             text(&self.text),
-            "Champion",
             combo_box,
             vertical_space(150),
         ]
@@ -60,41 +86,30 @@ impl Sandbox for MatchupTool {
             .center_x()
             .center_y()
             .into()
-        //column![
-        //    button("+").on_press(Message::IncrementPressed),
-        //    text(self.value).size(50),
-        //    button("-").on_press(Message::DecrementPressed),
-        //]
-        //.padding(20)
-        //.align_items(Alignment::Center)
-        //.into()
     }
     fn update(&mut self, message: Message) {
         match message {
-            Message::IncrementPressed => {
-                self.value += 1;
-            }
-            Message::DecrementPressed => {
-                self.value -= 1;
-            }
-            Message::Selected(champ) => {
-                self.selected_champion = Some(champ);
-                self.text = champ.test().to_string();
+            Message::Selected(obj) => {
+                let index = self.champion_array.iter().position(|r| r.equals(&obj)).unwrap();
+                self.text = self.champion_array[index].print_counters();
+                self.selected_champion = Some(obj);
                 self.champions.unfocus();
             }
-            Message::OptionHovered(champ) => {
-                self.text = champ.test().to_string();
+            Message::OptionHovered(obj) => {
+                let index = self.champion_array.iter().position(|r| r.equals(&obj)).unwrap();
+                self.text = self.champion_array[index].print_counters();
             }
             Message::Closed => {
-                self.text = self
-                    .selected_champion
-                    .map(|champ| champ.test().to_string())
-                    .unwrap_or_default();
+                //self.text = self
+                    //.selected_champion
+                    //.map(|champ| matchup_data_reader::champion_struct::Champion::get_champion_with_name(&champ, &self.champion_array).print_counters())
+                    //.unwrap_or_default();
             }
         }
     }
 }
 
+/*
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Champion {
     #[default]
@@ -148,3 +163,4 @@ impl std::fmt::Display for Champion {
         )
     }
 }
+*/

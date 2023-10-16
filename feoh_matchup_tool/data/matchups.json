@@ -2,6 +2,7 @@
   {
     "iconname": "aatrox",
     "name": "Aatrox",
+    "id": 0,
     "counters": [
       "Akali",
       "Camille",
@@ -16,6 +17,7 @@
   {
     "iconname": "ahri",
     "name": "Ahri",
+    "id": 1,
     "counters": [
       "Irelia",
       "Akali",
@@ -32,6 +34,7 @@
   {
     "iconname": "akali",
     "name": "Akali",
+    "id": 2,
     "counters": [
       "Sylas",
       "Vel\u0027Koz",
@@ -52,6 +55,7 @@
   {
     "iconname": "akshan",
     "name": "Akshan",
+    "id": 3,
     "counters": [
       "Akali"
     ],
@@ -62,6 +66,7 @@
   {
     "iconname": "alistar",
     "name": "Alistar",
+    "id": 4,
     "counters": [
       "Rell"
     ],
@@ -72,12 +77,14 @@
   {
     "iconname": "amumu",
     "name": "Amumu",
+    "id": 5,
     "counters": [],
     "safeties": []
   },
   {
     "iconname": "anivia",
     "name": "Anivia",
+    "id": 6,
     "counters": [
       "Lucian",
       "Sylas",
