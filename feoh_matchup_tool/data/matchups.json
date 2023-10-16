@@ -1,28 +1,26 @@
 [
   {
-    "championId": "aatrox",
-    "championName": "Aatrox",
+    "iconname": "aatrox",
+    "name": "Aatrox",
     "counters": [
       "Akali",
       "Camille",
       "Lucian"
-    ],
-    "counterCompositions": [
-      "Outrange",
-      "Executioners"
     ]
+  },
   {
-    "championId": "ahri",
-    "championName": "Ahri",
+    "iconname": "ahri",
+    "name": "Ahri",
     "counters": [
       "Irelia",
       "Akali",
       "Zed",
       "Zoe"
     ]
+  },
   {
-    "championId": "akali",
-    "championName": "Akali",
+    "iconname": "akali",
+    "name": "Akali",
     "counters": [
       "Sylas",
       "Vel\u0027Koz",
@@ -33,27 +31,27 @@
     ]
   },
   {
-    "championId": "akshan",
-    "championName": "Akshan",
+    "iconname": "akshan",
+    "name": "Akshan",
     "counters": [
       "Akali"
     ]
   },
   {
-    "championId": "alistar",
-    "championName": "Alistar",
+    "iconname": "alistar",
+    "name": "Alistar",
     "counters": [
       "Rell"
     ]
   },
   {
-    "championId": "amumu",
-    "championName": "Amumu",
+    "iconname": "amumu",
+    "name": "Amumu",
     "counters": []
   },
   {
-    "championId": "anivia",
-    "championName": "Anivia",
+    "iconname": "anivia",
+    "name": "Anivia",
     "counters": [
       "Lucian",
       "Sylas",
