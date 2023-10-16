@@ -1,4 +1,4 @@
-use iced::widget::{button, column, text, combo_box, container, scrollable, vertical_space};
+use iced::widget::{column, text, combo_box, container, scrollable, vertical_space};
 use iced::{Alignment, Element, Sandbox, Length};
 
 pub struct MatchupTool {

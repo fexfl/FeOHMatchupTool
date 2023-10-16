@@ -6,6 +6,11 @@
       "Akali",
       "Camille",
       "Lucian"
+    ],
+    "safeties": [
+      1,
+      1,
+      1
     ]
   },
   {
@@ -16,6 +21,12 @@
       "Akali",
       "Zed",
       "Zoe"
+    ],
+    "safeties": [
+      1,
+      1,
+      1,
+      1
     ]
   },
   {
@@ -28,6 +39,14 @@
       "Ryze",
       "Viktor",
       "Ornn"
+    ],
+    "safeties": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
     ]
   },
   {
@@ -35,6 +54,9 @@
     "name": "Akshan",
     "counters": [
       "Akali"
+    ],
+    "safeties": [
+      1
     ]
   },
   {
@@ -42,12 +64,16 @@
     "name": "Alistar",
     "counters": [
       "Rell"
+    ],
+    "safeties": [
+      1
     ]
   },
   {
     "iconname": "amumu",
     "name": "Amumu",
-    "counters": []
+    "counters": [],
+    "safeties": []
   },
   {
     "iconname": "anivia",
@@ -56,6 +82,11 @@
       "Lucian",
       "Sylas",
       "Irelia"
+    ],
+    "safeties": [
+      1,
+      1,
+      1
     ]
   }
 ]
