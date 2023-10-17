@@ -1,50 +1,23 @@
-use std::ptr::null;
-
 use iced::widget::{column, text, combo_box, container, scrollable, vertical_space};
 use iced::{Alignment, Element, Sandbox, Length};
-use crate::matchup_data_reader::champion_struct::Champion;
-use crate::matchup_data_reader::read_file as read_file;
+//use crate::matchup_data_reader::champion_struct::Champion;
+//use crate::matchup_data_reader::read_file as read_file;
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
     selected_champion: Option<ChampEnum>,
     text: String,
-    champion_obj_array: Vec<Champion>,
+    //champion_obj_array: Vec<Champion>,
 }
 
 impl MatchupTool {
     /*
-    fn get_champion_refs(champvec: &Vec<Champion>) -> Vec<&Champion> {
-        let mut out_vec = vec![];
-        for itr in champvec {
-            out_vec.push(itr);
-        }
-        return out_vec;
-    }
-
-    fn create_id_array(champvec: &Vec<Champion>) -> Vec<usize> {
-        let mut out_vec = vec![];
-        for itr in champvec {
-            out_vec.push(itr.id);
-        }
-        return out_vec;
-    }
-
-    fn create_name_array(champvec: &mut Vec<Champion>) -> Vec<String> {
-        let mut out_vec = vec![];
-        for itr in champvec {
-            out_vec.push(itr.name);
-        }
-        return out_vec;
-    }
-    */
-    
     pub fn get_champion_from_enum(&self, champ: ChampEnum) -> &Champion {
         let index = self.champion_obj_array.iter().position(|struct_obj| struct_obj.equals(&champ.to_string())).unwrap();
         return &self.champion_obj_array[index];
     }
-    
-
+    */
+    /*
     pub fn print_counters(&self, champ: &Champion) -> String {
         let mut out_string = String::from("Counters:");
         for cntr in &champ.counters {
@@ -54,6 +27,7 @@ impl MatchupTool {
         }
         return out_string;
     }
+    */
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -71,7 +45,7 @@ impl Sandbox for MatchupTool {
             champions: combo_box::State::new(ChampEnum::ALL.to_vec()),
             selected_champion: None,
             text: String::new(),
-            champion_obj_array: read_file(),
+            //champion_obj_array: read_file(),
         }
     }
 
@@ -91,8 +65,8 @@ impl Sandbox for MatchupTool {
         .width(250);
 
         let content = column![
-            "Counters",
             text(&self.text),
+            "Counters",
             combo_box,
             vertical_space(150),
         ]
@@ -111,19 +85,23 @@ impl Sandbox for MatchupTool {
         match message {
             Message::Selected(obj) => {
                 self.selected_champion = Some(obj);
-                self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
-                //self.text = "lol".to_string();
+                //self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
+                self.text = obj.to_string();
                 self.champions.unfocus();
             }
             Message::OptionHovered(obj) => {
-                self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
-                //self.text = "lol".to_string();
+                //self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
+                self.text = obj.to_string();
             }
             Message::Closed => {
                 //self.text = self
                     //.selected_champion
                     //.map(|champ| matchup_data_reader::champion_struct::Champion::get_champion_with_name(&champ, &self.champion_array).print_counters())
                     //.unwrap_or_default();
+                self.text = self
+                    .selected_champion
+                    .map(|champ| champ.hello())
+                    .unwrap_or_default()
             }
         }
     }
@@ -152,6 +130,10 @@ impl ChampEnum {
         ChampEnum::Amumu,
         ChampEnum::Anivia,
     ];
+
+    fn hello(&self) -> String {
+        self.to_string()
+    }
 }
 
 impl std::fmt::Display for ChampEnum {
