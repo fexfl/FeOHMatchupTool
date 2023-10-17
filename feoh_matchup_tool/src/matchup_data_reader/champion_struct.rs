@@ -115,3 +115,11 @@ pub fn transform_raw_to_champ(rdvec: Vec<RawData>) -> Vec<Champion> {
     return champion_vector;
     
 }
+
+pub fn get_champion_image_from_name(name: &str) -> image::Handle {
+    let path = format!(
+        ".\\img\\{}.png", name.to_lowercase()
+    );
+    println!("Getting Champion image from: {}", path);
+    image::Handle::from_path(path)
+}

@@ -1,7 +1,7 @@
-use iced::widget::{column, row, text, combo_box, container, scrollable, vertical_space, image};
+use iced::widget::{column, row, text, combo_box, container, scrollable, vertical_space, image, Column};
 use iced::{Alignment, Element, Sandbox, Length};
 use crate::matchup_data_reader::champion_struct::Champion;
-use crate::matchup_data_reader::read_file as read_file;
+use crate::matchup_data_reader::{read_file as read_file, self};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
@@ -21,7 +21,7 @@ impl MatchupTool {
         for cntr in &champ.counters {
             let (st, ms) = cntr;
             out_string.push_str(&st);
-            out_string.push_str(" - ");
+            out_string.push_str(" ");
             out_string.push_str(&ms.to_string());
             out_string.push_str("\n");
         }
@@ -60,7 +60,7 @@ impl Sandbox for MatchupTool {
     fn view(&self) -> Element<Message> {
         let combo_box = combo_box(
             &self.champions,
-            "Select a champion...",
+            "Select a champion!",
             self.selected_champion.as_ref(),
             Message::Selected,
         )
@@ -68,17 +68,33 @@ impl Sandbox for MatchupTool {
         .on_close(Message::Closed)
         .width(250);
 
+        let counterstring_itr = self.text.lines();
+        let mut counters_column: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
+
+        if self.text.is_empty() {
+            counters_column = counters_column.push(text("This champion has no counters!"));
+        } else {
+            for subitr in counterstring_itr {
+                let mut champ_and_safety = subitr.split_whitespace();
+                let champ = champ_and_safety.next().unwrap();
+
+                counters_column = counters_column.push(row![
+                    image::viewer(matchup_data_reader::champion_struct::get_champion_image_from_name(champ).clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)),
+                    text(champ),
+                    text(champ_and_safety.next().unwrap()),
+                ]
+                .align_items(Alignment::Center)
+                .spacing(10)
+                .padding(10)
+                );
+            }
+        } 
+
         let content = column![
             row![
                 image::viewer(self.selected_image.clone()).height(Length::Fixed(32.)).width(Length::Fixed(32.)),
                 combo_box,
-                column![
-                    "Counters: ",
-                    text(&self.text),
-                ]
-                .width(Length::Fill)
-                .align_items(Alignment::Center)
-                .spacing(10),
+                counters_column,
             ]
             //.height(Length::Shrink)
             .align_items(Alignment::Center)
