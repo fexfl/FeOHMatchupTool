@@ -1,3 +1,5 @@
+use std::ptr::null;
+
 use iced::widget::{column, text, combo_box, container, scrollable, vertical_space};
 use iced::{Alignment, Element, Sandbox, Length};
 use crate::matchup_data_reader::champion_struct::Champion;
@@ -36,10 +38,12 @@ impl MatchupTool {
         return out_vec;
     }
     */
+    
     pub fn get_champion_from_enum(&self, champ: ChampEnum) -> &Champion {
         let index = self.champion_obj_array.iter().position(|struct_obj| struct_obj.equals(&champ.to_string())).unwrap();
         return &self.champion_obj_array[index];
     }
+    
 
     pub fn print_counters(&self, champ: &Champion) -> String {
         let mut out_string = String::from("Counters:");
@@ -108,10 +112,12 @@ impl Sandbox for MatchupTool {
             Message::Selected(obj) => {
                 self.selected_champion = Some(obj);
                 self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
+                //self.text = "lol".to_string();
                 self.champions.unfocus();
             }
             Message::OptionHovered(obj) => {
                 self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
+                //self.text = "lol".to_string();
             }
             Message::Closed => {
                 //self.text = self

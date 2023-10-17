@@ -5,6 +5,6 @@ pub mod feoh_matchup_tool;
 pub mod matchup_data_reader;
 
 fn main() -> iced::Result {
-    println!("uwu");
+    println!("Starting Matchup Tool.");
     MatchupTool::run(Settings::default())
 }
