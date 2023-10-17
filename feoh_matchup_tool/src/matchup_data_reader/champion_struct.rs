@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use iced::widget::image;
 
 #[derive(Debug, Clone)]
 pub struct Champion {
@@ -29,7 +30,13 @@ impl Champion {
         return &vect[index];
     }
     */
-    
+    pub fn get_champion_image(&self) -> image::Handle {
+        let path = format!(
+            ".\\img\\{}.png", self.iconname
+        );
+        println!("Getting Champion image from: {}", path);
+        image::Handle::from_path(path)
+    }
 }
 
 impl std::fmt::Display for Champion {
@@ -74,6 +81,16 @@ impl MatchupSafety {
             Self::Normal => 1,
             Self::Safe => 2,
         }
+    }
+}
+
+impl std::fmt::Display for MatchupSafety {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{:?}",
+            self
+        )
     }
 }
 
