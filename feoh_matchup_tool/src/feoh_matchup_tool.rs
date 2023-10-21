@@ -1,9 +1,10 @@
+use bytes::Bytes;
 use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space};
 use iced::theme::Theme;
-use iced::{Alignment, Element, Sandbox, Length};
+use iced::{Alignment, Element, Sandbox, Application, Length, Command};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw};
+use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw, get_champion_image_with_ownership};
 use crate::matchup_data_reader::{read_file as read_file, self, write_file};
 
 pub struct MatchupTool {
@@ -45,9 +46,10 @@ impl MatchupTool {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Message {
     Selected(ChampEnum),
+    IconFound(Result<image::Handle,FeohError>),
     OptionHovered(ChampEnum),
     Closed,
     CounterAdded(Option<ChampEnum>, Option<MatchupSafety>),
@@ -57,11 +59,27 @@ pub enum Message {
     ChampToAddClosed,
 }
 
-impl Sandbox for MatchupTool {
-    type Message = Message;
+#[derive(Debug, Clone)]
+pub enum FeohError {
+    APIError,
+}
 
-    fn new() -> Self {
-        Self {
+impl From<reqwest::Error> for FeohError {
+    fn from(error: reqwest::Error) -> FeohError {
+        dbg!(error);
+
+        FeohError::APIError
+    }
+}
+
+impl Application for MatchupTool {
+    type Message = Message;
+    type Theme = Theme;
+    type Executor = iced::executor::Default;
+    type Flags = ();
+
+    fn new(_flags: ()) -> (Self, iced::Command<Message>) {
+        (Self {
             champions: combo_box::State::new(ChampEnum::all().to_vec()),
             selected_champion: None,
             hovered_champion: None,
@@ -71,7 +89,8 @@ impl Sandbox for MatchupTool {
             text: String::new(),
             champion_obj_array: read_file(),
             selected_image: image::Handle::from_path(format![".\\img\\default_image.png"]),
-        }
+        },
+        Command::none())
     }
 
     fn title(&self) -> String {
@@ -108,8 +127,8 @@ impl Sandbox for MatchupTool {
             counters_column = counters_column.push(text("This champion has no counters!"));
         } else {
             counters_column = counters_column.push(row![
-                image::viewer(self.get_champion_from_enum(self.hovered_champion.unwrap()).get_champion_image()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                text(format!("{} Counters: ", self.hovered_champion.unwrap())).size(24),
+                image::viewer(self.selected_image.clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                text(format!("{} Counters: ", self.selected_champion.unwrap())).size(24),
             ]
             .align_items(Alignment::Center)
             .spacing(10)
@@ -172,34 +191,51 @@ impl Sandbox for MatchupTool {
             //.center_y()
             .into()
     }
-    fn update(&mut self, message: Message) {
+    fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::Selected(obj) => {
+                let champ_ref = self.get_champion_from_enum(obj).clone();
+                let cmd = Command::perform(get_champion_image_with_ownership(champ_ref), Message::IconFound);
                 self.selected_champion = Some(obj);
                 self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
                 self.champions.unfocus();
-                self.selected_image = self.get_champion_from_enum(obj).get_champion_image();
+                
+                return cmd;
+            }
+            Message::IconFound(res) => {
+                let path = match res {
+                    Ok(byt) => byt,
+                    Err(_err) => panic!("Error! Image couldnt be created from bytes!"),
+                };
+                self.selected_image = path;
+                Command::none()
             }
             Message::OptionHovered(obj) => {
-                self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
+                //self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
                 self.hovered_champion = Some(obj);
-                self.selected_image = self.get_champion_from_enum(obj).get_champion_image();
+                //let champ_ref = self.get_champion_from_enum(obj).clone();
+                //Command::perform(get_champion_image_with_ownership(champ_ref), Message::IconFound)
+                Command::none()
             }
             Message::Closed => {
                 self.text = "Select a champion".to_string();
                 self.selected_image = self.get_default_image();
+                Command::none()
             }
             Message::CounterAdded(obj, ms) => {
                 match (obj,ms,self.selected_champion) {
                     (Some(champ),Some(matchupst),Some(upper_champ)) => {
                         let idx = self.get_champion_index_from_enum(upper_champ);
                         self.champion_obj_array[idx].counters.push((champ.to_string(),matchupst));
-                        self.update(Message::Selected(upper_champ));
 
                         write_file(export_champ_to_raw(&self.champion_obj_array));
+                        
+                        self.update(Message::Selected(upper_champ))
+
                     },
                     _ => {
                         println!("Added nothing!");
+                        Command::none()
                     },
                 }
             }
@@ -209,24 +245,33 @@ impl Sandbox for MatchupTool {
                         let idx = self.get_champion_index_from_enum(upper_champ);
                         let counter_idx = self.champion_obj_array[idx].counters.iter().position(|(tuple_string,_tuple_ms)| tuple_string == (&champ.to_string())).unwrap();
                         self.champion_obj_array[idx].counters.remove(counter_idx);
-                        self.update(Message::Selected(upper_champ));
 
                         write_file(export_champ_to_raw(&self.champion_obj_array));
+
+                        self.update(Message::Selected(upper_champ))
+
+                        
                     },
                     _ => {
                         println!{"Removed nothing!"};
+                        Command::none()
                     },
                 }
+                
             }
             Message::MatchupSafetySelected(ms) => {
                 self.selected_matchup_safety = Some(ms);
+                Command::none()
             }
             Message::ChampToAddSelected(obj) => {
                 self.selected_champ_toadd = Some(obj);
                 self.champ_toadd_cbs.unfocus();
+                Command::none()
             }
             Message::ChampToAddClosed => {
+                Command::none()
             }
+            
         }
     }
 

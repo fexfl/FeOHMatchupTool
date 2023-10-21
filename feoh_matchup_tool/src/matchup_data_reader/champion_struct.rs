@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 use iced::widget::image;
+use bytes::Bytes;
+
+use crate::feoh_matchup_tool::FeohError;
 
 #[derive(Debug, Clone)]
 pub struct Champion {
@@ -14,13 +17,55 @@ impl Champion {
         self.name == String::from(other)
     }
 
-    pub fn get_champion_image(&self) -> image::Handle {
+    /*
+    pub async fn get_champion_image(&self) -> Result<image::Handle,reqwest::Error> {
         let path = format!(
-            ".\\img\\{}.png", self.iconname
+            "http://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", self.iconname
         );
-        image::Handle::from_path(path)
+        
+        let bytes = reqwest::get(&path).await?.bytes().await?;
+
+        Ok(image::Handle::from_memory(bytes))
+        
+    }
+    */
+
+    pub async fn get_champion_image(&self) -> Result<image::Handle, FeohError> {
+        let path = format!(
+            "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", self.iconname
+        );
+        
+        let bytes = reqwest::get(&path).await?.bytes().await?;
+
+        Ok(image::Handle::from_memory(bytes))
     }
 }
+
+pub async fn get_champion_image_with_ownership(champ: Champion) -> Result<image::Handle, FeohError> {
+    let path = format!(
+        "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", champ.iconname
+    );
+    println!("Image path: {}", path);
+    
+    let bytes = reqwest::get(&path).await?.bytes().await?;
+
+    Ok(image::Handle::from_memory(bytes))
+}
+
+pub fn get_champion_image_from_name(name: &str) -> image::Handle {
+    let mut path: String = String::new();
+    if name.contains("\u{0027}") {
+        path = format!(
+            ".\\img\\{}.png", name.to_lowercase().replace("\u{0027}", "")
+        );
+    } else {
+        path = format!(
+            ".\\img\\{}.png", name.to_lowercase()
+        );
+    }
+    image::Handle::from_path(path)
+}
+
 
 impl std::fmt::Display for Champion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -129,16 +174,3 @@ pub fn export_champ_to_raw (champvec: &Vec<Champion>) -> Vec<RawData> {
     return out_vec;
 }
 
-pub fn get_champion_image_from_name(name: &str) -> image::Handle {
-    let mut path: String = String::new();
-    if name.contains("\u{0027}") {
-        path = format!(
-            ".\\img\\{}.png", name.to_lowercase().replace("\u{0027}", "")
-        );
-    } else {
-        path = format!(
-            ".\\img\\{}.png", name.to_lowercase()
-        );
-    }
-    image::Handle::from_path(path)
-}
