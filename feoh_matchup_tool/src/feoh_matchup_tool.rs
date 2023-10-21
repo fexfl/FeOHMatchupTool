@@ -103,7 +103,7 @@ impl Sandbox for MatchupTool {
                 let champ = champ_and_safety.next().unwrap();
 
                 counters_column = counters_column.push(row![
-                    image::viewer(matchup_data_reader::champion_struct::get_champion_image_from_name(champ).clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)),
+                    image::viewer(matchup_data_reader::champion_struct::get_champion_image_from_name(champ).clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
                     text(champ),
                     text(champ_and_safety.next().unwrap()),
                 ]
@@ -116,7 +116,7 @@ impl Sandbox for MatchupTool {
 
         let content = column![
             row![
-                image::viewer(self.selected_image.clone()).height(Length::Fixed(32.)).width(Length::Fixed(32.)),
+                image::viewer(self.selected_image.clone()).height(Length::Fixed(32.)).width(Length::Fixed(32.)).scale_step(0.),
                 combo_box,
                 counters_column,
             ]

@@ -626,8 +626,12 @@
   {
     "name": "Renekton",
     "iconname": "Renekton",
-    "counters": [],
-    "safeties": []
+    "counters": [
+      "Ornn"
+    ],
+    "safeties": [
+      2
+    ]
   },
   {
     "name": "Rengar",
