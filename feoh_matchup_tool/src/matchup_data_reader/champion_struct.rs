@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use iced::widget::image;
-use bytes::Bytes;
 
 use crate::feoh_matchup_tool::FeohError;
 
@@ -45,7 +44,6 @@ pub async fn get_champion_image_with_ownership(champ: Champion) -> Result<image:
     let path = format!(
         "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", champ.iconname
     );
-    println!("Image path: {}", path);
     
     let bytes = reqwest::get(&path).await?.bytes().await?;
 
@@ -53,7 +51,7 @@ pub async fn get_champion_image_with_ownership(champ: Champion) -> Result<image:
 }
 
 pub fn get_champion_image_from_name(name: &str) -> image::Handle {
-    let mut path: String = String::new();
+    let path: String;
     if name.contains("\u{0027}") {
         path = format!(
             ".\\img\\{}.png", name.to_lowercase().replace("\u{0027}", "")

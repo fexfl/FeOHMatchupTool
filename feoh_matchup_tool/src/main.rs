@@ -1,4 +1,4 @@
-use iced::{Sandbox, Application, Settings};
+use iced::{Application, Settings};
 use crate::feoh_matchup_tool::MatchupTool;
 
 pub mod feoh_matchup_tool;
