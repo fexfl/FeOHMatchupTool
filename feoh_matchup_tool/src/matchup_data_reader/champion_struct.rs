@@ -131,9 +131,16 @@ pub fn export_champ_to_raw (champvec: &Vec<Champion>) -> Vec<RawData> {
 }
 
 pub fn get_champion_image_from_name(name: &str) -> image::Handle {
-    let path = format!(
-        ".\\img\\{}.png", name.to_lowercase()
-    );
+    let mut path: String = String::new();
+    if name.contains("\u{0027}") {
+        path = format!(
+            ".\\img\\{}.png", name.to_lowercase().replace("\u{0027}", "")
+        );
+    } else {
+        path = format!(
+            ".\\img\\{}.png", name.to_lowercase()
+        );
+    }
     println!("Getting Champion image from: {}", path);
     image::Handle::from_path(path)
 }
