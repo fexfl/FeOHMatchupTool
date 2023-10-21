@@ -14,4 +14,4 @@ Cargo.lock
 *.pdb
 
 # Images
-feoh_matchup_tool/img/*
+feoh_matchup_tool/img/*.png
