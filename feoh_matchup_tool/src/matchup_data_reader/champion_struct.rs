@@ -3,7 +3,7 @@ use iced::widget::image;
 
 #[derive(Debug, Clone)]
 pub struct Champion {
-    pub id: usize,
+    //pub id: usize,
     pub name: String,
     pub iconname: String,
     pub counters: Vec<(String, MatchupSafety)>,
@@ -34,7 +34,7 @@ impl std::fmt::Display for Champion {
 
 #[derive(Serialize, Deserialize)]
 pub struct RawData {
-    pub id: usize,
+    //pub id: usize,
     pub name: String,
     pub iconname: String,
     pub counters: Vec<String>,
@@ -95,7 +95,7 @@ pub fn transform_raw_to_champ (rdvec: Vec<RawData>) -> Vec<Champion> {
             countertuples.push(tup);
         }
         let champ = Champion {
-            id: rd.id,
+            //id: rd.id,
             name: rd.name,
             iconname: rd.iconname,
             counters: countertuples,
@@ -118,7 +118,7 @@ pub fn export_champ_to_raw (champvec: &Vec<Champion>) -> Vec<RawData> {
         }
 
         let rd = RawData {
-            id: champ.id,
+            //id: champ.id,
             name: (&champ.name).to_string(),
             iconname: (&champ.iconname).to_string(),
             counters: pure_counter_vec,

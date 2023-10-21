@@ -1,11 +1,14 @@
 use iced::widget::{column, row, text, combo_box, container, scrollable, vertical_space, image, Column, button, pick_list};
 use iced::theme::Theme;
 use iced::{Alignment, Element, Sandbox, Length};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw};
 use crate::matchup_data_reader::{read_file as read_file, self, write_file};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
+    all_champions: [ChampEnum; 165],
     selected_champion: Option<ChampEnum>,
     selected_matchup_safety: Option<MatchupSafety>,
     selected_champ_toadd: Option<ChampEnum>,
@@ -57,7 +60,8 @@ impl Sandbox for MatchupTool {
 
     fn new() -> Self {
         Self {
-            champions: combo_box::State::new(ChampEnum::ALL.to_vec()),
+            champions: combo_box::State::new(ChampEnum::all().to_vec()),
+            all_champions: ChampEnum::all(),
             selected_champion: None,
             selected_matchup_safety: None,
             selected_champ_toadd: None,
@@ -85,7 +89,7 @@ impl Sandbox for MatchupTool {
         let pick_list_ms  = pick_list(&MatchupSafety::ALL[..], self.selected_matchup_safety, Message::MatchupSafetySelected)
         .placeholder("Pick a matchup safety");
 
-        let pick_list_champ = pick_list(&ChampEnum::ALL[..], self.selected_champ_toadd, Message::ChampToAddSelected)
+        let pick_list_champ = pick_list(&self.all_champions[..], self.selected_champ_toadd, Message::ChampToAddSelected)
         .placeholder("Pick a counter");
 
         let counterstring_itr = self.text.lines();
@@ -200,7 +204,7 @@ impl Sandbox for MatchupTool {
 }
 
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, EnumIter)]
 pub enum ChampEnum {
     #[default]
     Aatrox,
@@ -210,27 +214,218 @@ pub enum ChampEnum {
     Alistar,
     Amumu,
     Anivia,
+    Annie,
+    Aphelios,
+    Ashe,
+    AurelionSol,
+    Azir,
+    Bard,
+    BelVeth,
+    Blitzcrank,
+    Brand,
+    Braum,
+    Briar,
+    Caitlyn,
+    Camille,
+    Cassiopeia,
+    ChoGath,
+    Corki,
+    Darius,
+    Diana,
+    Draven,
+    DrMundo,
+    Ekko,
+    Elise,
+    Evelynn,
+    Ezreal,
+    Fiddlesticks,
+    Fiora,
+    Fizz,
+    Galio,
+    Gangplank,
+    Garen,
+    Gnar,
+    Gragas,
+    Graves,
+    Gwen,
+    Hecarim,
+    Heimerdinger,
+    Illaoi,
+    Irelia,
+    Ivern,
+    Janna,
+    JarvanIV,
+    Jax,
+    Jayce,
+    Jhin,
+    Jinx,
+    KaiSa,
+    Kalista,
+    Karma,
+    Karthus,
+    Kassadin,
+    Katarina,
+    Kayle,
+    Kayn,
+    Kennen,
+    KhaZix,
+    Kindred,
+    Kled,
+    KogMaw,
+    KSante,
+    LeBlanc,
+    LeeSin,
+    Leona,
+    Lillia,
+    Lissandra,
+    Lucian,
+    Lulu,
+    Lux,
+    Malphite,
+    Malzahar,
+    Maokai,
+    MasterYi,
+    Milio,
+    MissFortune,
+    Mordekaiser,
+    Morgana,
+    Naafiri,
+    Nami,
+    Nasus,
+    Nautilus,
+    Neeko,
+    Nidalee,
+    Nilah,
+    Nocturne,
+    NunuWillump,
+    Olaf,
+    Orianna,
+    Ornn,
+    Pantheon,
+    Poppy,
+    Pyke,
+    Qiyana,
+    Quinn,
+    Rakan,
+    Rammus,
+    RekSai,
+    Rell,
+    RenataGlasc,
+    Renekton,
+    Rengar,
+    Riven,
+    Rumble,
+    Ryze,
+    Samira,
+    Sejuani,
+    Senna,
+    Seraphine,
+    Sett,
+    Shaco,
+    Shen,
+    Shyvana,
+    Singed,
+    Sion,
+    Sivir,
+    Skarner,
+    Sona,
+    Soraka,
+    Swain,
+    Sylas,
+    Syndra,
+    TahmKench,
+    Taliyah,
+    Talon,
+    Taric,
+    Teemo,
+    Thresh,
+    Tristana,
+    Trundle,
+    Tryndamere,
+    TwistedFate,
+    Twitch,
+    Udyr,
+    Urgot,
+    Varus,
+    Vayne,
+    Veigar,
+    VelKoz,
+    Vex,
+    Vi,
+    Viego,
+    Viktor,
+    Vladimir,
+    Volibear,
+    Warwick,
+    Wukong,
+    Xayah,
+    Xerath,
+    XinZhao,
+    Yasuo,
+    Yone,
+    Yorick,
+    Yuumi,
+    Zac,
+    Zed,
+    Zeri,
+    Ziggs,
+    Zilean,
+    Zoe,
+    Zyra
 }
 
 impl ChampEnum {
-    const ALL: [ChampEnum; 7] = [
-        ChampEnum::Aatrox,
-        ChampEnum::Ahri,
-        ChampEnum::Akali,
-        ChampEnum::Akshan,
-        ChampEnum::Alistar,
-        ChampEnum::Amumu,
-        ChampEnum::Anivia,
-    ];
+    pub fn all() -> [ChampEnum; 165] {
+        let mut out_array: [ChampEnum; 165] = [ChampEnum::Aatrox; 165];
+        let mut index: usize = 0;
+        for enmitr in ChampEnum::iter() {
+            out_array[index] = enmitr;
+            index += 1;
+        }
+        return out_array;
+    }
+
+    pub fn iconname_from_enum(&self) -> String {
+        format!("{:?}", self)
+    }
 }
 
 impl std::fmt::Display for ChampEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{:?}",
-            self
-        )
+        let outstring: &str = match self {
+            ChampEnum::AurelionSol => "Aurelion Sol",
+            ChampEnum::BelVeth => "Bel\u{0027}Veth",
+            ChampEnum::ChoGath => "Cho\u{0027}Gath",
+            ChampEnum::DrMundo => "Dr. Mundo",
+            ChampEnum::JarvanIV => "Jarvan IV",
+            ChampEnum::KaiSa => "Kai\u{0027}Sa",
+            ChampEnum::KhaZix => "Kha\u{0027}Zix",
+            ChampEnum::KogMaw => "Kog\u{0027}Maw",
+            ChampEnum::KSante => "K\u{0027}Sante",
+            ChampEnum::LeeSin => "Lee Sin",
+            ChampEnum::MasterYi => "Master Yi",
+            ChampEnum::MissFortune => "Miss Fortune",
+            ChampEnum::NunuWillump => "Nunu & Willump",
+            ChampEnum::RekSai => "Rek\u{0027}Sai",
+            ChampEnum::RenataGlasc => "Renata Glasc",
+            ChampEnum::TahmKench => "Tahm Kench",
+            ChampEnum::TwistedFate => "Twisted Fate",
+            ChampEnum::XinZhao => "Xin Zhao",
+            _ => "None of the above",
+        };
+        if outstring == "None of the above" {
+            return write!(
+                f,
+                "{:?}",
+                self
+            )
+        } else {
+            return write!(
+                f,
+                "{}",
+                outstring
+            )
+        }
     }
 }
 
