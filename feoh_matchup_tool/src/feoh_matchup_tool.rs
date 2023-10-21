@@ -417,7 +417,12 @@ impl ChampEnum {
     }
 
     pub fn iconname_from_enum(&self) -> String {
-        format!("{:?}", self)
+        match self {
+            ChampEnum::Wukong => "MonkeyKing".to_string(),
+            ChampEnum::NunuWillump => "Nunu".to_string(),
+            _ => format!("{:?}", self),
+        }
+        
     }
 }
 
