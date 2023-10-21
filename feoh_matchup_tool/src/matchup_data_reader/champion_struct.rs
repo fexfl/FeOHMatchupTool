@@ -58,9 +58,10 @@ pub struct RawData {
     pub safeties: Vec<usize>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum MatchupSafety {
     Safe,
+    #[default]
     Normal,
     Playable,
 }
@@ -82,6 +83,12 @@ impl MatchupSafety {
             Self::Safe => 2,
         }
     }
+
+    pub const ALL: [MatchupSafety; 3] = [
+        MatchupSafety::Playable,
+        MatchupSafety::Normal,
+        MatchupSafety::Safe,
+    ];
 }
 
 impl std::fmt::Display for MatchupSafety {
