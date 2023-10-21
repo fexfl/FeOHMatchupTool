@@ -10,26 +10,10 @@ pub struct Champion {
 }
 
 impl Champion {
-    /*
-    pub fn print_counters(&self) -> String{
-        let mut out_string = String::from("Counters:");
-        for cntr in &self.counters {
-            let (st, ms) = cntr;
-            out_string.push_str(" ");
-            out_string.push_str(&st);
-        }
-        return out_string;
-    }
-    */
     pub fn equals(&self, other: &String) -> bool {
         self.name == String::from(other)
     }
-    /*
-    pub fn get_champion_with_name<'a>(input: &'a String, vect: &'a Vec<Champion>) -> &'a Champion {
-        let index = vect.iter().position(|&r| r.equals(input)).unwrap();
-        return &vect[index];
-    }
-    */
+    
     pub fn get_champion_image(&self) -> image::Handle {
         let path = format!(
             ".\\img\\{}.png", self.iconname
