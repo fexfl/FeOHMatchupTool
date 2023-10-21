@@ -1,4 +1,5 @@
 use iced::widget::{column, row, text, combo_box, container, scrollable, vertical_space, image, Column, button, pick_list};
+use iced::theme::{self, Theme};
 use iced::{Alignment, Element, Sandbox, Length};
 use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw};
 use crate::matchup_data_reader::{read_file as read_file, self, write_file};
@@ -191,6 +192,10 @@ impl Sandbox for MatchupTool {
                 self.selected_champ_toadd = Some(obj);
             }
         }
+    }
+
+    fn theme (&self) -> Theme {
+        Theme::Dark
     }
 }
 

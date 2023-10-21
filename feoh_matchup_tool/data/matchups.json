@@ -22,15 +22,13 @@
       "Irelia",
       "Akali",
       "Zed",
-      "Zoe",
-      "Aatrox"
+      "Zoe"
     ],
     "safeties": [
       1,
       1,
       1,
-      1,
-      2
+      1
     ]
   },
   {
