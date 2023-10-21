@@ -1,4 +1,4 @@
-use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox};
+use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space};
 use iced::theme::Theme;
 use iced::{Alignment, Element, Sandbox, Length};
 use strum::IntoEnumIterator;
@@ -9,6 +9,7 @@ use crate::matchup_data_reader::{read_file as read_file, self, write_file};
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
     selected_champion: Option<ChampEnum>,
+    hovered_champion: Option<ChampEnum>,
     selected_matchup_safety: Option<MatchupSafety>,
     selected_champ_toadd: Option<ChampEnum>,
     champ_toadd_cbs: combo_box::State<ChampEnum>,
@@ -63,6 +64,7 @@ impl Sandbox for MatchupTool {
         Self {
             champions: combo_box::State::new(ChampEnum::all().to_vec()),
             selected_champion: None,
+            hovered_champion: None,
             selected_matchup_safety: None,
             selected_champ_toadd: None,
             champ_toadd_cbs: combo_box::State::new(ChampEnum::all().to_vec()),
@@ -105,6 +107,15 @@ impl Sandbox for MatchupTool {
         if self.text.is_empty() {
             counters_column = counters_column.push(text("This champion has no counters!"));
         } else {
+            counters_column = counters_column.push(row![
+                image::viewer(self.get_champion_from_enum(self.hovered_champion.unwrap()).get_champion_image()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                text(format!("{} Counters: ", self.hovered_champion.unwrap())).size(24),
+            ]
+            .align_items(Alignment::Center)
+            .spacing(10)
+            .padding(0),
+            );
+            counters_column = counters_column.push(vertical_space(30));
             for subitr in counterstring_itr {
                 let mut champ_and_safety = subitr.split_whitespace();
                 let champ = champ_and_safety.next().unwrap();
@@ -171,6 +182,7 @@ impl Sandbox for MatchupTool {
             }
             Message::OptionHovered(obj) => {
                 self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
+                self.hovered_champion = Some(obj);
                 self.selected_image = self.get_champion_from_enum(obj).get_champion_image();
             }
             Message::Closed => {
