@@ -141,6 +141,6 @@ pub fn get_champion_image_from_name(name: &str) -> image::Handle {
             ".\\img\\{}.png", name.to_lowercase()
         );
     }
-    println!("Getting Champion image from: {}", path);
+    //println!("Getting Champion image from: {}", path);
     image::Handle::from_path(path)
 }
