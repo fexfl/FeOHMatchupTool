@@ -2,6 +2,7 @@
 A League of Legends Matchup Management Tool developed in Rust using [Iced](https://iced.rs/).
 
 While most LoL Matchup Tools are based on statistics and winrates of the champions against each other, this information may not always reflect the current skill level, or champion proficiency of the player.
+
 Thus, this is a matchup tool solely for your own matchup experience. With this tool, you will be able to save matchups and counters in an efficient manner, with a distinction in matchup difficulty in three different levels.
 
 ## How to install
@@ -13,6 +14,8 @@ Thus, this is a matchup tool solely for your own matchup experience. With this t
 
 ## How to use
 Select a champion from the combo box to reveal all its counters recorded in the matchup data file.
+
 To add a new counter, select the counter from the adjacent combo box, as well as a matchup difficulty, and press the "Add Counter" button.
 The changes will automatically be saved to the data file.
+
 To remove a counter that was previously added, pick the counter from the combo box, and press the "Remove Counter" button.
