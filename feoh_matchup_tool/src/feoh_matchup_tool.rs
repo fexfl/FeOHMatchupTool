@@ -465,6 +465,13 @@ impl ChampEnum {
         match self {
             ChampEnum::Wukong => "MonkeyKing".to_string(),
             ChampEnum::NunuWillump => "Nunu".to_string(),
+            ChampEnum::KhaZix => "Khazix".to_string(),
+            ChampEnum::ChoGath => "Chogath".to_string(),
+            ChampEnum::BelVeth => "Belveth".to_string(),
+            ChampEnum::KaiSa => "Kaisa".to_string(),
+            ChampEnum::LeBlanc => "Leblanc".to_string(),
+            ChampEnum::RenataGlasc => "Renata".to_string(),
+            ChampEnum::VelKoz => "Velkoz".to_string(),
             _ => format!("{:?}", self),
         }
         
@@ -492,6 +499,7 @@ impl std::fmt::Display for ChampEnum {
             ChampEnum::TahmKench => "Tahm Kench",
             ChampEnum::TwistedFate => "Twisted Fate",
             ChampEnum::XinZhao => "Xin Zhao",
+            ChampEnum::VelKoz => "Vel\u{0027}Koz",
             _ => "None of the above",
         };
         if outstring == "None of the above" {
