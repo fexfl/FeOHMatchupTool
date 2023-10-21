@@ -13,7 +13,7 @@ impl Champion {
     pub fn equals(&self, other: &String) -> bool {
         self.name == String::from(other)
     }
-    
+
     pub fn get_champion_image(&self) -> image::Handle {
         let path = format!(
             ".\\img\\{}.png", self.iconname
@@ -60,7 +60,7 @@ impl MatchupSafety {
         }
     }
 
-    fn _ms_to_int(&self) -> usize {
+    fn ms_to_int(&self) -> usize {
         match self {
             Self::Playable => 0,
             Self::Normal => 1,
@@ -85,7 +85,7 @@ impl std::fmt::Display for MatchupSafety {
     }
 }
 
-pub fn transform_raw_to_champ(rdvec: Vec<RawData>) -> Vec<Champion> {
+pub fn transform_raw_to_champ (rdvec: Vec<RawData>) -> Vec<Champion> {
     let mut champion_vector = vec![];
     for rd in rdvec {
         let mut countertuples: Vec<(String, MatchupSafety)> = vec![];
@@ -105,6 +105,29 @@ pub fn transform_raw_to_champ(rdvec: Vec<RawData>) -> Vec<Champion> {
     }
     return champion_vector;
     
+}
+
+pub fn export_champ_to_raw (champvec: &Vec<Champion>) -> Vec<RawData> {
+    let mut out_vec: Vec<RawData> = vec![];
+    for champ in champvec {
+        let mut pure_counter_vec: Vec<String> = vec![];
+        let mut pure_ms_vec: Vec<usize> = vec![];
+
+        for (cntr, ms) in &champ.counters {
+            pure_counter_vec.push(cntr.to_string());
+            pure_ms_vec.push(ms.ms_to_int());
+        }
+
+        let rd = RawData {
+            id: champ.id,
+            name: (&champ.name).to_string(),
+            iconname: (&champ.iconname).to_string(),
+            counters: pure_counter_vec,
+            safeties: pure_ms_vec,
+        };
+        out_vec.push(rd);
+    }
+    return out_vec;
 }
 
 pub fn get_champion_image_from_name(name: &str) -> image::Handle {

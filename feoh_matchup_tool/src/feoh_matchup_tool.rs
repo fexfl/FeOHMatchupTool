@@ -1,7 +1,7 @@
 use iced::widget::{column, row, text, combo_box, container, scrollable, vertical_space, image, Column, button, pick_list};
 use iced::{Alignment, Element, Sandbox, Length};
-use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety};
-use crate::matchup_data_reader::{read_file as read_file, self};
+use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw};
+use crate::matchup_data_reader::{read_file as read_file, self, write_file};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
@@ -85,7 +85,7 @@ impl Sandbox for MatchupTool {
         .placeholder("Pick a matchup safety");
 
         let pick_list_champ = pick_list(&ChampEnum::ALL[..], self.selected_champ_toadd, Message::ChampToAddSelected)
-        .placeholder("Pick a champion to edit");
+        .placeholder("Pick a counter");
 
         let counterstring_itr = self.text.lines();
         let mut counters_column: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
@@ -161,6 +161,8 @@ impl Sandbox for MatchupTool {
                         let idx = self.get_champion_index_from_enum(upper_champ);
                         self.champion_obj_array[idx].counters.push((champ.to_string(),matchupst));
                         self.update(Message::Selected(upper_champ));
+
+                        write_file(export_champ_to_raw(&self.champion_obj_array));
                     },
                     _ => {
                         println!("Added nothing!");
@@ -174,6 +176,8 @@ impl Sandbox for MatchupTool {
                         let counter_idx = self.champion_obj_array[idx].counters.iter().position(|(tuple_string,_tuple_ms)| tuple_string == (&champ.to_string())).unwrap();
                         self.champion_obj_array[idx].counters.remove(counter_idx);
                         self.update(Message::Selected(upper_champ));
+
+                        write_file(export_champ_to_raw(&self.champion_obj_array));
                     },
                     _ => {
                         println!{"Removed nothing!"};
