@@ -1,4 +1,4 @@
-use iced::widget::{column, row, text, combo_box, container, scrollable, vertical_space, image, Column, button, pick_list};
+use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox};
 use iced::theme::Theme;
 use iced::{Alignment, Element, Sandbox, Length};
 use strum::IntoEnumIterator;
@@ -8,10 +8,10 @@ use crate::matchup_data_reader::{read_file as read_file, self, write_file};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
-    all_champions: [ChampEnum; 165],
     selected_champion: Option<ChampEnum>,
     selected_matchup_safety: Option<MatchupSafety>,
     selected_champ_toadd: Option<ChampEnum>,
+    champ_toadd_cbs: combo_box::State<ChampEnum>,
     text: String,
     champion_obj_array: Vec<Champion>,
     selected_image: image::Handle,
@@ -53,6 +53,7 @@ pub enum Message {
     CounterRemoved(Option<ChampEnum>),
     MatchupSafetySelected(MatchupSafety),
     ChampToAddSelected(ChampEnum),
+    ChampToAddClosed,
 }
 
 impl Sandbox for MatchupTool {
@@ -61,10 +62,10 @@ impl Sandbox for MatchupTool {
     fn new() -> Self {
         Self {
             champions: combo_box::State::new(ChampEnum::all().to_vec()),
-            all_champions: ChampEnum::all(),
             selected_champion: None,
             selected_matchup_safety: None,
             selected_champ_toadd: None,
+            champ_toadd_cbs: combo_box::State::new(ChampEnum::all().to_vec()),
             text: String::new(),
             champion_obj_array: read_file(),
             selected_image: image::Handle::from_path(format![".\\img\\default_image.png"]),
@@ -76,7 +77,7 @@ impl Sandbox for MatchupTool {
     }
     
     fn view(&self) -> Element<Message> {
-        let combo_box = combo_box(
+        let combo_box_main = combo_box(
             &self.champions,
             "Select a champion!",
             self.selected_champion.as_ref(),
@@ -86,11 +87,17 @@ impl Sandbox for MatchupTool {
         .on_close(Message::Closed)
         .width(250);
 
-        let pick_list_ms  = pick_list(&MatchupSafety::ALL[..], self.selected_matchup_safety, Message::MatchupSafetySelected)
+        let pick_list_ms = pick_list(&MatchupSafety::ALL[..], self.selected_matchup_safety, Message::MatchupSafetySelected)
         .placeholder("Pick a matchup safety");
 
-        let pick_list_champ = pick_list(&self.all_champions[..], self.selected_champ_toadd, Message::ChampToAddSelected)
-        .placeholder("Pick a counter");
+        let cmb_box_champ: ComboBox<'_, ChampEnum, Message> = combo_box(
+            &self.champ_toadd_cbs,
+            "Select a counter", 
+            self.selected_champ_toadd.as_ref(), 
+            Message::ChampToAddSelected
+        )
+        .width(250)
+        .on_close(Message::ChampToAddClosed);
 
         let counterstring_itr = self.text.lines();
         let mut counters_column: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
@@ -101,37 +108,47 @@ impl Sandbox for MatchupTool {
             for subitr in counterstring_itr {
                 let mut champ_and_safety = subitr.split_whitespace();
                 let champ = champ_and_safety.next().unwrap();
+                let sfty = champ_and_safety.next().unwrap();
 
                 counters_column = counters_column.push(row![
                     image::viewer(matchup_data_reader::champion_struct::get_champion_image_from_name(champ).clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
                     text(champ),
-                    text(champ_and_safety.next().unwrap()),
+                    text(" - "),
+                    text(sfty),
                 ]
                 .align_items(Alignment::Center)
                 .spacing(10)
-                .padding(10)
+                .padding(0)
                 );
             }
         } 
 
         let content = column![
             row![
+                image::viewer(image::Handle::from_path(".\\img\\icon.png").clone()).height(Length::Fixed(128.)).width(Length::Fixed(128.)).scale_step(0.),
+                text("FeOH Matchup Tool").size(60),
+            ]
+            .align_items(Alignment::Center)
+            .spacing(10),
+            row![
                 image::viewer(self.selected_image.clone()).height(Length::Fixed(32.)).width(Length::Fixed(32.)).scale_step(0.),
-                combo_box,
-                counters_column,
+                combo_box_main,
+                horizontal_space(150),
+                cmb_box_champ,
+                pick_list_ms,
+                button("Add Counter").on_press(Message::CounterAdded(self.selected_champ_toadd, self.selected_matchup_safety)),
+                button("Remove Counter").on_press(Message::CounterRemoved(self.selected_champ_toadd)),
             ]
             //.height(Length::Shrink)
             .align_items(Alignment::Center)
             .spacing(10)
             .padding(50),
-
-            vertical_space(150),
             row![
-                pick_list_champ,
-                pick_list_ms,
-                button("Add Counter").on_press(Message::CounterAdded(self.selected_champ_toadd, self.selected_matchup_safety)),
-                button("Remove Counter").on_press(Message::CounterRemoved(self.selected_champ_toadd)),
-            ],
+                counters_column,
+            ]
+            .align_items(Alignment::Center)
+            .spacing(10)
+            .padding(50),
         ]
         .width(Length::Fill)
         .align_items(Alignment::Center)
@@ -141,7 +158,7 @@ impl Sandbox for MatchupTool {
             .width(Length::Fill)
             .height(Length::Fill)
             .center_x()
-            .center_y()
+            //.center_y()
             .into()
     }
     fn update(&mut self, message: Message) {
@@ -194,6 +211,9 @@ impl Sandbox for MatchupTool {
             }
             Message::ChampToAddSelected(obj) => {
                 self.selected_champ_toadd = Some(obj);
+                self.champ_toadd_cbs.unfocus();
+            }
+            Message::ChampToAddClosed => {
             }
         }
     }
@@ -202,7 +222,6 @@ impl Sandbox for MatchupTool {
         Theme::Dark
     }
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, EnumIter)]
 pub enum ChampEnum {
