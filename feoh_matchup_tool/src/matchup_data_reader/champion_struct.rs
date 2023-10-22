@@ -21,13 +21,8 @@ pub async fn get_images_with_ownership(champ: Champion) -> Result<(image::Handle
     let path = format!(
         "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", champ.iconname
     );
-
-    println!("Main image path: {}", path);
-    println!("Counters length: {}", champ.counters.len());
     
     let bytes = reqwest::get(&path).await?.bytes().await?;
-
-    println!("Bytes awaited!");
 
     let main_handle = image::Handle::from_memory(bytes);
 
@@ -51,13 +46,10 @@ pub async fn get_images_with_ownership(champ: Champion) -> Result<(image::Handle
         let path_cntr = format!(
             "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", name
         );
-
-        println!("Counter image path: {}", path_cntr);
         
         let bytes_cntr = reqwest::get(&path_cntr).await?.bytes().await?;
 
         let handle_cntr = image::Handle::from_memory(bytes_cntr);
-        println!("Counter image handle: {:?}", handle_cntr);
 
         counter_handles.push(handle_cntr);
         

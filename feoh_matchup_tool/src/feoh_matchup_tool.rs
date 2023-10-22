@@ -154,10 +154,6 @@ impl Application for MatchupTool {
                         let champ = champ_and_safety.next().unwrap();
                         let sfty = champ_and_safety.next().unwrap();
                         let img = counterimages_itr.next();
-                        match img {
-                            Some(hndle) => println!("Image handle is here for counter {champ}: {hndle:?}"),
-                            None => println!("Image handle is none for counter {champ}"),
-                        }
         
                         counters_column = counters_column.push(row![
                             image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
