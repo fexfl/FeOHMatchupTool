@@ -1,12 +1,13 @@
+use std::path::PathBuf;
 use std::vec;
 
-use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space};
+use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space, text_input};
 use iced::theme::Theme;
-use iced::{Alignment, Element, Application, Length, Command};
+use iced::{Alignment, Element, Application, Length, Command, Renderer};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw, get_images_with_ownership};
-use crate::matchup_data_reader::{read_file as read_file, write_file};
+use crate::matchup_data_reader::{read_file as read_file, write_file, self};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
@@ -20,6 +21,7 @@ pub struct MatchupTool {
     selected_image: image::Handle,
     counters_images: Vec<image::Handle>,
     c_loaded: CountersLoaded,
+    old_file_location_string: String,
 }
 
 pub enum CountersLoaded {
@@ -66,6 +68,8 @@ pub enum Message {
     MatchupSafetySelected(MatchupSafety),
     ChampToAddSelected(ChampEnum),
     ChampToAddClosed,
+    ImportOldData(String),
+    OldFileLocationChanged(String),
 }
 
 #[derive(Debug, Clone)]
@@ -100,6 +104,7 @@ impl Application for MatchupTool {
             selected_image: image::Handle::from_path(format![".\\img\\system\\default_image.png"]),
             counters_images: vec![],
             c_loaded: CountersLoaded::Loaded,
+            old_file_location_string: "Location to import".to_string(),
         },
         Command::none())
     }
@@ -172,6 +177,9 @@ impl Application for MatchupTool {
             CountersLoaded::Errored => 
                 counters_column = counters_column.push(text("Error!")),
         }
+        let ofl = &self.old_file_location_string;
+        let old_data_file_location_input: iced::widget::TextInput<'_, Message, Renderer> = text_input("Location to import", ofl)
+        .on_input(Message::OldFileLocationChanged(ofl));
         
 
         let content = column![
@@ -191,6 +199,14 @@ impl Application for MatchupTool {
                 button("Remove Counter").on_press(Message::CounterRemoved(self.selected_champ_toadd)),
             ]
             //.height(Length::Shrink)
+            .align_items(Alignment::Center)
+            .spacing(10)
+            .padding(50),
+            row![
+                horizontal_space(450),
+                old_data_file_location_input,
+                button("Import old data format file").on_press(Message::ImportOldData(ofl.to_string())),
+            ]
             .align_items(Alignment::Center)
             .spacing(10)
             .padding(50),
@@ -295,6 +311,19 @@ impl Application for MatchupTool {
                 Command::none()
             }
             Message::ChampToAddClosed => {
+                Command::none()
+            }
+            Message::ImportOldData(pathstr) => {
+                println!("{}",pathstr);
+                /*
+                let path = PathBuf::from(pathstr);
+                matchup_data_reader::import_old_data_file(&mut self.champion_obj_array, path);
+                write_file(export_champ_to_raw(&self.champion_obj_array));
+                */
+                self.update(Message::Closed)
+            }
+            Message::OldFileLocationChanged(ofl) => {
+                self.old_file_location_string = ofl;
                 Command::none()
             }
             

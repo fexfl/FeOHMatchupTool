@@ -172,3 +172,17 @@ pub fn export_champ_to_raw (champvec: &Vec<Champion>) -> Vec<RawData> {
     return out_vec;
 }
 
+// The raw data format of the old Matchup Tool written in Java
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+pub struct OldFormat {
+    //pub id: usize,
+    pub championId: String,
+    pub championName: String,
+    pub counters: Vec<String>,
+    pub counterCompositions: Vec<String>,
+    pub provenCounters: Vec<String>,
+    pub playableCounters: Vec<String>,
+    pub ireliaWins: usize,
+    pub ireliaLosses: usize,
+}

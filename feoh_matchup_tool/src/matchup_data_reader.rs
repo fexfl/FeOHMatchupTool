@@ -38,3 +38,27 @@ pub fn create_json_file() {
     let out_string = serde_json::to_string_pretty(&empty_vec).expect("Error creating json string of empty json file");
     fs::write(get_file_location(), out_string).expect("Error writing file!");
 }
+
+pub fn import_old_data_file(champvec: &mut Vec<champion_struct::Champion>, path: PathBuf) {
+    println!("Importing old data file!");
+    let old_data = fs::read_to_string(path).expect("Unable to read old data file!");
+    let old_format_array: Vec<champion_struct::OldFormat> = serde_json::from_str(&old_data).expect("Old JSON was not well formatted");
+
+    // Iterate over champions
+    for champ in champvec {
+        let equiv_old_idx = old_format_array.iter().position(|old_champ| old_champ.championName == champ.name);
+        let equiv_old = match equiv_old_idx {
+            Some(eq) => &old_format_array[eq],
+            None => continue,
+        };
+        for proven_cntr in &equiv_old.provenCounters {
+            champ.counters.push((proven_cntr.clone(), champion_struct::MatchupSafety::Safe));
+        }
+        for normal_cntr in &equiv_old.counters {
+            champ.counters.push((normal_cntr.clone(), champion_struct::MatchupSafety::Normal));
+        }
+        for playable_cntr in &equiv_old.playableCounters {
+            champ.counters.push((playable_cntr.clone(), champion_struct::MatchupSafety::Playable));
+        }
+    }
+}
