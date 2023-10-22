@@ -50,7 +50,7 @@ impl MatchupTool {
         return out_string;
     }
     pub fn get_default_image(&self) -> image::Handle {
-        let path: String = format!(".\\img\\default_image.png");
+        let path: String = format!(".\\img\\system\\default_image.png");
         image::Handle::from_path(path)
     }
 }
