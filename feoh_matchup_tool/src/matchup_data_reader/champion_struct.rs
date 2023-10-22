@@ -29,7 +29,6 @@ pub async fn get_images_with_ownership(champ: Champion) -> Result<(image::Handle
     let mut counter_handles: Vec<image::Handle> = vec![];
 
     for (cntr,_ms) in champ.counters {
-        println!("Starting processing counter: {}", cntr);
         let mut name = cntr.to_lowercase();
         
         if name.contains("\u{0027}") {
