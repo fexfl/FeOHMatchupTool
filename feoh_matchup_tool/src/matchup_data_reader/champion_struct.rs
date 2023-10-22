@@ -15,29 +15,6 @@ impl Champion {
     pub fn equals(&self, other: &String) -> bool {
         self.name == String::from(other)
     }
-
-    /*
-    pub async fn get_champion_image(&self) -> Result<image::Handle,reqwest::Error> {
-        let path = format!(
-            "http://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", self.iconname
-        );
-        
-        let bytes = reqwest::get(&path).await?.bytes().await?;
-
-        Ok(image::Handle::from_memory(bytes))
-        
-    }
-    */
-
-    pub async fn get_champion_image(&self) -> Result<image::Handle, FeohError> {
-        let path = format!(
-            "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", self.iconname
-        );
-        
-        let bytes = reqwest::get(&path).await?.bytes().await?;
-
-        Ok(image::Handle::from_memory(bytes))
-    }
 }
 
 pub async fn get_images_with_ownership(champ: Champion) -> Result<(image::Handle,Vec<image::Handle>), FeohError> {
@@ -86,20 +63,6 @@ pub async fn get_images_with_ownership(champ: Champion) -> Result<(image::Handle
         
     }
     return Ok((main_handle, counter_handles));
-}
-
-pub fn get_champion_image_from_name(name: &str) -> image::Handle {
-    let path: String;
-    if name.contains("\u{0027}") {
-        path = format!(
-            ".\\img\\{}.png", name.to_lowercase().replace("\u{0027}", "")
-        );
-    } else {
-        path = format!(
-            ".\\img\\{}.png", name.to_lowercase()
-        );
-    }
-    image::Handle::from_path(path)
 }
 
 pub fn first_char_uppercase(s: &str) -> String {
