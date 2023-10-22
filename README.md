@@ -10,9 +10,8 @@ But, since only your own experiences are taken into account, the tool will be em
 ## How to install
 1. Install [Rust and Cargo](https://www.rust-lang.org/tools/install)
 2. Clone this repository using ```git clone https://github.com/fexfl/FeOHMatchupTool``` at your desired destination
-3. (Optional, but recommended) Contact me to retrieve the image files used inside the Tool and drop them in the ```/feoh_matchup_tool/img/``` folder
-4. Run the Tool using the Windows SuperShell script ```run.ps1``` on Windows, or on Linux using ```cargo run``` from inside ```/feoh_matchup_tool/```
-5. An empty matchup file will be automatically created in ```/feoh_matchup_tool/data/``` that can be customized from inside the Tool
+3. Run the Tool using the Windows SuperShell script ```run.ps1``` on Windows, or on Linux using ```cargo run``` from inside ```/feoh_matchup_tool/```
+4. An empty matchup file will be automatically created in ```/feoh_matchup_tool/data/``` that can be customized from inside the Tool
 
 ## How to use
 Select a champion from the combo box to reveal all its counters recorded in the matchup data file.
@@ -21,3 +20,8 @@ To add a new counter, select the counter from the adjacent combo box, as well as
 The changes will automatically be saved to the data file.
 
 To remove a counter that was previously added, pick the counter from the combo box, and press the "Remove Counter" button.
+
+## Notes
+This tool uses Riot's Data Dragon for champion squares.
+
+FeOH Matchup Tool is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc
