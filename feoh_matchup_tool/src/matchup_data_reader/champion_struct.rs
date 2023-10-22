@@ -40,14 +40,52 @@ impl Champion {
     }
 }
 
-pub async fn get_champion_image_with_ownership(champ: Champion) -> Result<image::Handle, FeohError> {
+pub async fn get_images_with_ownership(champ: Champion) -> Result<(image::Handle,Vec<image::Handle>), FeohError> {
     let path = format!(
         "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", champ.iconname
     );
+
+    println!("Main image path: {}", path);
+    println!("Counters length: {}", champ.counters.len());
     
     let bytes = reqwest::get(&path).await?.bytes().await?;
 
-    Ok(image::Handle::from_memory(bytes))
+    println!("Bytes awaited!");
+
+    let main_handle = image::Handle::from_memory(bytes);
+
+    let mut counter_handles: Vec<image::Handle> = vec![];
+
+    for (cntr,_ms) in champ.counters {
+        println!("Starting processing counter: {}", cntr);
+        let mut name = cntr.to_lowercase();
+        
+        if name.contains("\u{0027}") {
+            name = name.replace("\u{0027}", "");
+        }
+        name = first_char_uppercase(&name);
+        name = match &name[..] {
+            "Aurelionsol" => "AurelionSol".to_string(),
+            "Ksante" => "KSante".to_string(),
+            "Wukong" => "MonkeyKing".to_string(),
+            "Leesin" => "LeeSin".to_string(),
+            _ => name,
+        };
+        let path_cntr = format!(
+            "https://ddragon.leagueoflegends.com/cdn/13.20.1/img/champion/{}.png", name
+        );
+
+        println!("Counter image path: {}", path_cntr);
+        
+        let bytes_cntr = reqwest::get(&path_cntr).await?.bytes().await?;
+
+        let handle_cntr = image::Handle::from_memory(bytes_cntr);
+        println!("Counter image handle: {:?}", handle_cntr);
+
+        counter_handles.push(handle_cntr);
+        
+    }
+    return Ok((main_handle, counter_handles));
 }
 
 pub fn get_champion_image_from_name(name: &str) -> image::Handle {
@@ -62,6 +100,14 @@ pub fn get_champion_image_from_name(name: &str) -> image::Handle {
         );
     }
     image::Handle::from_path(path)
+}
+
+pub fn first_char_uppercase(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
 }
 
 

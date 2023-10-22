@@ -1,10 +1,12 @@
+use std::vec;
+
 use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space};
 use iced::theme::Theme;
 use iced::{Alignment, Element, Application, Length, Command};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw, get_champion_image_with_ownership};
-use crate::matchup_data_reader::{read_file as read_file, self, write_file};
+use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw, get_images_with_ownership};
+use crate::matchup_data_reader::{read_file as read_file, write_file};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
@@ -16,6 +18,14 @@ pub struct MatchupTool {
     text: String,
     champion_obj_array: Vec<Champion>,
     selected_image: image::Handle,
+    counters_images: Vec<image::Handle>,
+    c_loaded: CountersLoaded,
+}
+
+pub enum CountersLoaded {
+    Loading,
+    Loaded,
+    Errored,
 }
 
 impl MatchupTool {
@@ -48,7 +58,7 @@ impl MatchupTool {
 #[derive(Debug, Clone)]
 pub enum Message {
     Selected(ChampEnum),
-    IconFound(Result<image::Handle,FeohError>),
+    IconFound(Result<(image::Handle,Vec<image::Handle>),FeohError>),
     OptionHovered(ChampEnum),
     Closed,
     CounterAdded(Option<ChampEnum>, Option<MatchupSafety>),
@@ -88,6 +98,8 @@ impl Application for MatchupTool {
             text: String::new(),
             champion_obj_array: read_file(),
             selected_image: image::Handle::from_path(format![".\\img\\default_image.png"]),
+            counters_images: vec![],
+            c_loaded: CountersLoaded::Loaded,
         },
         Command::none())
     }
@@ -121,36 +133,50 @@ impl Application for MatchupTool {
 
         let counterstring_itr = self.text.lines();
         let mut counters_column: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
+        let mut counterimages_itr = self.counters_images.iter();
 
-        if self.text.is_empty() {
-            counters_column = counters_column.push(text("This champion has no counters!"));
-        } else {
-            counters_column = counters_column.push(row![
-                image::viewer(self.selected_image.clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                text(format!("{} Counters: ", self.selected_champion.unwrap())).size(24),
-            ]
-            .align_items(Alignment::Center)
-            .spacing(10)
-            .padding(0),
-            );
-            counters_column = counters_column.push(vertical_space(30));
-            for subitr in counterstring_itr {
-                let mut champ_and_safety = subitr.split_whitespace();
-                let champ = champ_and_safety.next().unwrap();
-                let sfty = champ_and_safety.next().unwrap();
-
-                counters_column = counters_column.push(row![
-                    image::viewer(matchup_data_reader::champion_struct::get_champion_image_from_name(champ).clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                    text(champ),
-                    text(" - "),
-                    text(sfty),
-                ]
-                .align_items(Alignment::Center)
-                .spacing(10)
-                .padding(0)
-                );
-            }
-        } 
+        match self.c_loaded {
+            CountersLoaded::Loaded =>
+                if self.text.is_empty() {
+                    counters_column = counters_column.push(text("This champion has no counters!"));
+                } else {
+                    counters_column = counters_column.push(row![
+                        image::viewer(self.selected_image.clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                        text(format!("{} Counters: ", self.selected_champion.unwrap())).size(24),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                    .padding(0),
+                    );
+                    counters_column = counters_column.push(vertical_space(30));
+                    for subitr in counterstring_itr {
+                        let mut champ_and_safety = subitr.split_whitespace();
+                        let champ = champ_and_safety.next().unwrap();
+                        let sfty = champ_and_safety.next().unwrap();
+                        let img = counterimages_itr.next();
+                        match img {
+                            Some(hndle) => println!("Image handle is here for counter {champ}: {hndle:?}"),
+                            None => println!("Image handle is none for counter {champ}"),
+                        }
+        
+                        counters_column = counters_column.push(row![
+                            image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                            text(champ),
+                            text(" - "),
+                            text(sfty),
+                        ]
+                        .align_items(Alignment::Center)
+                        .spacing(10)
+                        .padding(0)
+                        );
+                    }
+                },
+            CountersLoaded::Loading => 
+                counters_column = counters_column.push(text("Loading...")),
+            CountersLoaded::Errored => 
+                counters_column = counters_column.push(text("Error!")),
+        }
+        
 
         let content = column![
             row![
@@ -193,27 +219,32 @@ impl Application for MatchupTool {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::Selected(obj) => {
-                let champ_ref = self.get_champion_from_enum(obj).clone();
-                let cmd = Command::perform(get_champion_image_with_ownership(champ_ref), Message::IconFound);
+                // Preparing for loading
+                self.c_loaded = CountersLoaded::Loading;
+                self.selected_image = self.get_default_image();
+
+                // Initiiating loading
                 self.selected_champion = Some(obj);
                 self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
                 self.champions.unfocus();
-                
-                return cmd;
+                let champ_ref = self.get_champion_from_enum(obj).clone();
+                Command::perform(get_images_with_ownership(champ_ref), Message::IconFound)
             }
             Message::IconFound(res) => {
-                let path = match res {
+                let (path,counter_paths) = match res {
                     Ok(byt) => byt,
                     Err(_err) => panic!("Error! Image couldnt be created from bytes!"),
                 };
                 self.selected_image = path;
+                self.counters_images = counter_paths;
+                self.c_loaded = CountersLoaded::Loaded;
                 Command::none()
             }
             Message::OptionHovered(obj) => {
                 //self.text = self.print_counters(self.get_champion_from_enum(obj)).to_string();
                 self.hovered_champion = Some(obj);
                 //let champ_ref = self.get_champion_from_enum(obj).clone();
-                //Command::perform(get_champion_image_with_ownership(champ_ref), Message::IconFound)
+                //Command::perform(get_images_with_ownership(champ_ref), Message::IconFound)
                 Command::none()
             }
             Message::Closed => {
