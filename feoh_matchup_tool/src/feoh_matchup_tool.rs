@@ -180,7 +180,7 @@ impl Application for MatchupTool {
 
         let content = column![
             row![
-                image::viewer(image::Handle::from_path(".\\img\\icon.png").clone()).height(Length::Fixed(128.)).width(Length::Fixed(128.)).scale_step(0.),
+                image::viewer(image::Handle::from_path(".\\img\\system\\icon.png").clone()).height(Length::Fixed(128.)).width(Length::Fixed(128.)).scale_step(0.),
                 text("FeOH Matchup Tool").size(60),
             ]
             .align_items(Alignment::Center)
