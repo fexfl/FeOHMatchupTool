@@ -97,7 +97,7 @@ impl Application for MatchupTool {
             champ_toadd_cbs: combo_box::State::new(ChampEnum::all().to_vec()),
             text: String::new(),
             champion_obj_array: read_file(),
-            selected_image: image::Handle::from_path(format![".\\img\\default_image.png"]),
+            selected_image: image::Handle::from_path(format![".\\img\\system\\default_image.png"]),
             counters_images: vec![],
             c_loaded: CountersLoaded::Loaded,
         },
