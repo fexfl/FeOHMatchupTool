@@ -188,8 +188,6 @@ impl Application for MatchupTool {
                             counters_column = counters_column.push(row![
                                 image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
                                 text(champ),
-                                text(" - "),
-                                text(sfty),
                             ]
                             .align_items(Alignment::Center)
                             .spacing(10)
@@ -199,8 +197,6 @@ impl Application for MatchupTool {
                             counters_column_middle = counters_column_middle.push(row![
                                 image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
                                 text(champ),
-                                text(" - "),
-                                text(sfty),
                             ]
                             .align_items(Alignment::Center)
                             .spacing(10)
@@ -210,8 +206,6 @@ impl Application for MatchupTool {
                             counters_column_right = counters_column_right.push(row![
                                 image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
                                 text(champ),
-                                text(" - "),
-                                text(sfty),
                             ]
                             .align_items(Alignment::Center)
                             .spacing(10)
