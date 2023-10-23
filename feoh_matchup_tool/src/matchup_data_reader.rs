@@ -41,27 +41,34 @@ pub fn create_json_file() {
 
 pub fn import_old_data_file(champvec: &mut Vec<champion_struct::Champion>, path: PathBuf) {
     println!("Importing old data file!");
-    let old_data = fs::read_to_string(path).expect("Unable to read old data file!");
-    let old_format_array: Vec<champion_struct::OldFormat> = serde_json::from_str(&old_data).expect("Old JSON was not well formatted");
+    let old_data = fs::read_to_string(path);
+    match old_data {
+        Ok(strin) => {
+            let old_format_array: Vec<champion_struct::OldFormat> = serde_json::from_str(&strin).expect("Old JSON was not well formatted");
 
-    // Iterate over champions
-    for champ in champvec {
-        let equiv_old_idx = old_format_array.iter().position(|old_champ| old_champ.championName == champ.name);
-        let equiv_old = match equiv_old_idx {
-            Some(eq) => &old_format_array[eq],
-            None => continue,
-        };
-        for proven_cntr in &equiv_old.provenCounters {
-            if champ.counters.contains(&(proven_cntr.clone(),champion_struct::MatchupSafety::Safe)) {continue;}
-            champ.counters.push((proven_cntr.clone(), champion_struct::MatchupSafety::Safe));
-        }
-        for normal_cntr in &equiv_old.counters {
-            if champ.counters.contains(&(normal_cntr.clone(),champion_struct::MatchupSafety::Normal)) {continue;}
-            champ.counters.push((normal_cntr.clone(), champion_struct::MatchupSafety::Normal));
-        }
-        for playable_cntr in &equiv_old.playableCounters {
-            if champ.counters.contains(&(playable_cntr.clone(),champion_struct::MatchupSafety::Playable)) {continue;}
-            champ.counters.push((playable_cntr.clone(), champion_struct::MatchupSafety::Playable));
+            // Iterate over champions
+            for champ in champvec {
+                let equiv_old_idx = old_format_array.iter().position(|old_champ| old_champ.championName == champ.name);
+                let equiv_old = match equiv_old_idx {
+                    Some(eq) => &old_format_array[eq],
+                    None => continue,
+                };
+                for proven_cntr in &equiv_old.provenCounters {
+                    if champ.counters.contains(&(proven_cntr.clone(),champion_struct::MatchupSafety::Safe)) {continue;}
+                    champ.counters.push((proven_cntr.clone(), champion_struct::MatchupSafety::Safe));
+                }
+                for normal_cntr in &equiv_old.counters {
+                    if champ.counters.contains(&(normal_cntr.clone(),champion_struct::MatchupSafety::Normal)) {continue;}
+                    champ.counters.push((normal_cntr.clone(), champion_struct::MatchupSafety::Normal));
+                }
+                for playable_cntr in &equiv_old.playableCounters {
+                    if champ.counters.contains(&(playable_cntr.clone(),champion_struct::MatchupSafety::Playable)) {continue;}
+                    champ.counters.push((playable_cntr.clone(), champion_struct::MatchupSafety::Playable));
+                }
+            }
+        },
+        Err(_err) => {
+            println!("Could not open file!");
         }
     }
 }
