@@ -137,6 +137,7 @@ impl Application for MatchupTool {
         .on_close(Message::ChampToAddClosed);
 
         let counterstring_itr = self.text.lines();
+        let mut counters_title: Row<'_, Message> = row!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
         let mut counters_structure: Row<'_, Message> = row!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
         let mut counters_column: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
         let mut counters_column_middle: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
@@ -148,9 +149,17 @@ impl Application for MatchupTool {
                 if self.text.is_empty() {
                     counters_column = counters_column.push(text("This champion has no counters!"));
                 } else {
-                    counters_column = counters_column.push(row![
+                    counters_title = counters_title.push(row![
                         image::viewer(self.selected_image.clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                        text(format!("{} Safe Counters: ", self.selected_champion.unwrap())).size(24),
+                        text(format!("{} Counters", self.selected_champion.unwrap())).size(28),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                    .padding(0),
+                    );
+
+                    counters_column = counters_column.push(row![
+                        text(format!("Safe Counters:")).size(24),
                     ]
                     .align_items(Alignment::Center)
                     .spacing(10)
@@ -261,16 +270,18 @@ impl Application for MatchupTool {
             .spacing(10)
             .padding(50),
             row![
-                horizontal_space(700),
+                horizontal_space(685),
                 old_data_file_location_input,
                 button("Import old data format file").on_press(Message::ImportOldData(ofl.to_string())),
             ]
             .align_items(Alignment::Center)
             .spacing(10)
             .padding(50),
-            row![
+            column![
+                counters_title,
                 counters_structure,
             ]
+            .width(Length::Fill)
             .align_items(Alignment::Center)
             .spacing(10)
             .padding(50),
@@ -318,8 +329,9 @@ impl Application for MatchupTool {
                 Command::none()
             }
             Message::Closed => {
-                self.text = "Select a champion".to_string();
+                self.text = "".to_string();
                 self.selected_image = self.get_default_image();
+                self.selected_champion = None;
                 Command::none()
             }
             Message::CounterAdded(obj, ms) => {
