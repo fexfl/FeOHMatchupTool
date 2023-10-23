@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::vec;
 
-use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space, text_input};
+use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space, text_input, Row};
 use iced::theme::Theme;
 use iced::{Alignment, Element, Application, Length, Command, Renderer};
 use strum::IntoEnumIterator;
@@ -137,49 +137,113 @@ impl Application for MatchupTool {
         .on_close(Message::ChampToAddClosed);
 
         let counterstring_itr = self.text.lines();
+        let mut counters_structure: Row<'_, Message> = row!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
         let mut counters_column: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
+        let mut counters_column_middle: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
+        let mut counters_column_right: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
         let mut counterimages_itr = self.counters_images.iter();
 
         match self.c_loaded {
-            CountersLoaded::Loaded =>
+            CountersLoaded::Loaded => {
                 if self.text.is_empty() {
                     counters_column = counters_column.push(text("This champion has no counters!"));
                 } else {
                     counters_column = counters_column.push(row![
                         image::viewer(self.selected_image.clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                        text(format!("{} Counters: ", self.selected_champion.unwrap())).size(24),
+                        text(format!("{} Safe Counters: ", self.selected_champion.unwrap())).size(24),
                     ]
                     .align_items(Alignment::Center)
                     .spacing(10)
                     .padding(0),
                     );
-                    counters_column = counters_column.push(vertical_space(30));
+                    counters_column = counters_column.push(vertical_space(10));
+
+                    counters_column_middle = counters_column_middle.push(row![
+                        text(format!("Normal Counters:")).size(24),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                    .padding(0),
+                    );
+
+                    counters_column_middle = counters_column_middle.push(vertical_space(10));
+
+                    counters_column_right = counters_column_right.push(row![
+                        text(format!("Playable Counters:")).size(24),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                    .padding(0),
+                    );
+
+                    counters_column_right = counters_column_right.push(vertical_space(10));
+
                     for subitr in counterstring_itr {
                         let mut champ_and_safety = subitr.split_whitespace();
                         let champ = champ_and_safety.next().unwrap();
                         let sfty = champ_and_safety.next().unwrap();
                         let img = counterimages_itr.next();
         
-                        counters_column = counters_column.push(row![
-                            image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                            text(champ),
-                            text(" - "),
-                            text(sfty),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(10)
-                        .padding(0)
-                        );
+                        if sfty == "Safe" {
+                            counters_column = counters_column.push(row![
+                                image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                                text(champ),
+                                text(" - "),
+                                text(sfty),
+                            ]
+                            .align_items(Alignment::Center)
+                            .spacing(10)
+                            .padding(0)
+                            );
+                        } else if sfty == "Normal" {
+                            counters_column_middle = counters_column_middle.push(row![
+                                image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                                text(champ),
+                                text(" - "),
+                                text(sfty),
+                            ]
+                            .align_items(Alignment::Center)
+                            .spacing(10)
+                            .padding(0)
+                            );
+                        } else if sfty == "Playable" {
+                            counters_column_right = counters_column_right.push(row![
+                                image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                                text(champ),
+                                text(" - "),
+                                text(sfty),
+                            ]
+                            .align_items(Alignment::Center)
+                            .spacing(10)
+                            .padding(0)
+                            );
+                        }
                     }
-                },
-            CountersLoaded::Loading => 
-                counters_column = counters_column.push(text("Loading...")),
-            CountersLoaded::Errored => 
-                counters_column = counters_column.push(text("Error!")),
+                }
+                counters_structure = counters_structure.push(counters_column);
+                counters_structure = counters_structure.push(counters_column_middle);
+                counters_structure = counters_structure.push(counters_column_right);
+            }
+                
+            CountersLoaded::Loading => {
+                counters_column = counters_column.push(text("Loading..."));
+                counters_structure = counters_structure.push(counters_column);
+                counters_structure = counters_structure.push(counters_column_middle);
+                counters_structure = counters_structure.push(counters_column_right);
+            }
+                
+            CountersLoaded::Errored => {
+                counters_column = counters_column.push(text("Error!"));
+                counters_structure = counters_structure.push(counters_column);
+                counters_structure = counters_structure.push(counters_column_middle);
+                counters_structure = counters_structure.push(counters_column_right);
+            }
+                
         }
         let ofl = &self.old_file_location_string;
         let old_data_file_location_input: iced::widget::TextInput<'_, Message, Renderer> = text_input("Location to import", ofl)
-        .on_input(Message::OldFileLocationChanged);
+        .on_input(Message::OldFileLocationChanged)
+        .width(250);
         
 
         let content = column![
@@ -203,7 +267,7 @@ impl Application for MatchupTool {
             .spacing(10)
             .padding(50),
             row![
-                horizontal_space(450),
+                horizontal_space(700),
                 old_data_file_location_input,
                 button("Import old data format file").on_press(Message::ImportOldData(ofl.to_string())),
             ]
@@ -211,7 +275,7 @@ impl Application for MatchupTool {
             .spacing(10)
             .padding(50),
             row![
-                counters_column,
+                counters_structure,
             ]
             .align_items(Alignment::Center)
             .spacing(10)
