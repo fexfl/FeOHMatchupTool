@@ -179,7 +179,7 @@ impl Application for MatchupTool {
         }
         let ofl = &self.old_file_location_string;
         let old_data_file_location_input: iced::widget::TextInput<'_, Message, Renderer> = text_input("Location to import", ofl)
-        .on_input(Message::OldFileLocationChanged(ofl));
+        .on_input(Message::OldFileLocationChanged);
         
 
         let content = column![
@@ -314,13 +314,15 @@ impl Application for MatchupTool {
                 Command::none()
             }
             Message::ImportOldData(pathstr) => {
-                println!("{}",pathstr);
-                /*
                 let path = PathBuf::from(pathstr);
+                println!("{}",path.display());
                 matchup_data_reader::import_old_data_file(&mut self.champion_obj_array, path);
                 write_file(export_champ_to_raw(&self.champion_obj_array));
-                */
-                self.update(Message::Closed)
+                match self.selected_champion {
+                    Some(champ) => self.update(Message::Selected(champ)),
+                    None => self.update(Message::Selected(ChampEnum::Aatrox)),
+                }
+                
             }
             Message::OldFileLocationChanged(ofl) => {
                 self.old_file_location_string = ofl;

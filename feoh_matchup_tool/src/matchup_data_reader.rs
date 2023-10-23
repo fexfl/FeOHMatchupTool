@@ -52,12 +52,15 @@ pub fn import_old_data_file(champvec: &mut Vec<champion_struct::Champion>, path:
             None => continue,
         };
         for proven_cntr in &equiv_old.provenCounters {
+            if champ.counters.contains(&(proven_cntr.clone(),champion_struct::MatchupSafety::Safe)) {continue;}
             champ.counters.push((proven_cntr.clone(), champion_struct::MatchupSafety::Safe));
         }
         for normal_cntr in &equiv_old.counters {
+            if champ.counters.contains(&(normal_cntr.clone(),champion_struct::MatchupSafety::Normal)) {continue;}
             champ.counters.push((normal_cntr.clone(), champion_struct::MatchupSafety::Normal));
         }
         for playable_cntr in &equiv_old.playableCounters {
+            if champ.counters.contains(&(playable_cntr.clone(),champion_struct::MatchupSafety::Playable)) {continue;}
             champ.counters.push((playable_cntr.clone(), champion_struct::MatchupSafety::Playable));
         }
     }
