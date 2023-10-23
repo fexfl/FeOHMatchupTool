@@ -21,6 +21,8 @@ The changes will automatically be saved to the data file.
 
 To remove a counter that was previously added, pick the counter from the combo box, and press the "Remove Counter" button.
 
+Additionally, matchups from the old Java Matchup Tool can be imported into FeOH Matchup Tool by entering the file location into the text input and pressing the "Import old data format file" button.
+
 ## Notes
 This tool uses Riot's Data Dragon for champion squares.
 
