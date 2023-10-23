@@ -1,12 +1,13 @@
+use std::path::PathBuf;
 use std::vec;
 
-use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space};
+use iced::widget::{column, row, text, combo_box, container, scrollable, horizontal_space, image, Column, button, pick_list, ComboBox, vertical_space, text_input, Row};
 use iced::theme::Theme;
-use iced::{Alignment, Element, Application, Length, Command};
+use iced::{Alignment, Element, Application, Length, Command, Renderer};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw, get_images_with_ownership};
-use crate::matchup_data_reader::{read_file as read_file, write_file};
+use crate::matchup_data_reader::{read_file as read_file, write_file, self};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
@@ -20,6 +21,7 @@ pub struct MatchupTool {
     selected_image: image::Handle,
     counters_images: Vec<image::Handle>,
     c_loaded: CountersLoaded,
+    old_file_location_string: String,
 }
 
 pub enum CountersLoaded {
@@ -66,6 +68,8 @@ pub enum Message {
     MatchupSafetySelected(MatchupSafety),
     ChampToAddSelected(ChampEnum),
     ChampToAddClosed,
+    ImportOldData(String),
+    OldFileLocationChanged(String),
 }
 
 #[derive(Debug, Clone)]
@@ -100,6 +104,7 @@ impl Application for MatchupTool {
             selected_image: image::Handle::from_path(format![".\\img\\system\\default_image.png"]),
             counters_images: vec![],
             c_loaded: CountersLoaded::Loaded,
+            old_file_location_string: "Location to import".to_string(),
         },
         Command::none())
     }
@@ -132,46 +137,116 @@ impl Application for MatchupTool {
         .on_close(Message::ChampToAddClosed);
 
         let counterstring_itr = self.text.lines();
+        let mut counters_title: Row<'_, Message> = row!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
+        let mut counters_structure: Row<'_, Message> = row!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
         let mut counters_column: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
+        let mut counters_column_middle: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
+        let mut counters_column_right: Column<'_, Message> = column!().align_items(Alignment::Start).spacing(10).width(Length::Fill);
         let mut counterimages_itr = self.counters_images.iter();
 
         match self.c_loaded {
-            CountersLoaded::Loaded =>
+            CountersLoaded::Loaded => {
                 if self.text.is_empty() {
                     counters_column = counters_column.push(text("This champion has no counters!"));
                 } else {
-                    counters_column = counters_column.push(row![
+                    counters_title = counters_title.push(row![
                         image::viewer(self.selected_image.clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                        text(format!("{} Counters: ", self.selected_champion.unwrap())).size(24),
+                        text(format!("{} Counters", self.selected_champion.unwrap())).size(28),
                     ]
                     .align_items(Alignment::Center)
                     .spacing(10)
                     .padding(0),
                     );
-                    counters_column = counters_column.push(vertical_space(30));
+
+                    counters_column = counters_column.push(row![
+                        text(format!("Safe Counters:")).size(24),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                    .padding(0),
+                    );
+                    counters_column = counters_column.push(vertical_space(10));
+
+                    counters_column_middle = counters_column_middle.push(row![
+                        text(format!("Normal Counters:")).size(24),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                    .padding(0),
+                    );
+
+                    counters_column_middle = counters_column_middle.push(vertical_space(10));
+
+                    counters_column_right = counters_column_right.push(row![
+                        text(format!("Playable Counters:")).size(24),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                    .padding(0),
+                    );
+
+                    counters_column_right = counters_column_right.push(vertical_space(10));
+
                     for subitr in counterstring_itr {
                         let mut champ_and_safety = subitr.split_whitespace();
                         let champ = champ_and_safety.next().unwrap();
                         let sfty = champ_and_safety.next().unwrap();
                         let img = counterimages_itr.next();
         
-                        counters_column = counters_column.push(row![
-                            image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
-                            text(champ),
-                            text(" - "),
-                            text(sfty),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(10)
-                        .padding(0)
-                        );
+                        if sfty == "Safe" {
+                            counters_column = counters_column.push(row![
+                                image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                                text(champ),
+                            ]
+                            .align_items(Alignment::Center)
+                            .spacing(10)
+                            .padding(0)
+                            );
+                        } else if sfty == "Normal" {
+                            counters_column_middle = counters_column_middle.push(row![
+                                image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                                text(champ),
+                            ]
+                            .align_items(Alignment::Center)
+                            .spacing(10)
+                            .padding(0)
+                            );
+                        } else if sfty == "Playable" {
+                            counters_column_right = counters_column_right.push(row![
+                                image::viewer(img.unwrap().clone()).width(Length::Fixed(32.)).height(Length::Fixed(32.)).scale_step(0.),
+                                text(champ),
+                            ]
+                            .align_items(Alignment::Center)
+                            .spacing(10)
+                            .padding(0)
+                            );
+                        }
                     }
-                },
-            CountersLoaded::Loading => 
-                counters_column = counters_column.push(text("Loading...")),
-            CountersLoaded::Errored => 
-                counters_column = counters_column.push(text("Error!")),
+                }
+                counters_structure = counters_structure.push(counters_column);
+                counters_structure = counters_structure.push(counters_column_middle);
+                counters_structure = counters_structure.push(counters_column_right);
+            }
+                
+            CountersLoaded::Loading => {
+                counters_column = counters_column.push(text("Loading..."));
+                counters_structure = counters_structure.push(counters_column);
+                counters_structure = counters_structure.push(counters_column_middle);
+                counters_structure = counters_structure.push(counters_column_right);
+            }
+                
+            CountersLoaded::Errored => {
+                counters_column = counters_column.push(text("Error!"));
+                counters_structure = counters_structure.push(counters_column);
+                counters_structure = counters_structure.push(counters_column_middle);
+                counters_structure = counters_structure.push(counters_column_right);
+            }
+                
         }
+        let ofl = &self.old_file_location_string;
+        let old_data_file_location_input: iced::widget::TextInput<'_, Message, Renderer> = text_input("Location to import", ofl)
+        .on_input(Message::OldFileLocationChanged)
+        .width(250);
         
 
         let content = column![
@@ -195,8 +270,18 @@ impl Application for MatchupTool {
             .spacing(10)
             .padding(50),
             row![
-                counters_column,
+                horizontal_space(685),
+                old_data_file_location_input,
+                button("Import old data format file").on_press(Message::ImportOldData(ofl.to_string())),
             ]
+            .align_items(Alignment::Center)
+            .spacing(10)
+            .padding(50),
+            column![
+                counters_title,
+                counters_structure,
+            ]
+            .width(Length::Fill)
             .align_items(Alignment::Center)
             .spacing(10)
             .padding(50),
@@ -244,8 +329,9 @@ impl Application for MatchupTool {
                 Command::none()
             }
             Message::Closed => {
-                self.text = "Select a champion".to_string();
+                self.text = "".to_string();
                 self.selected_image = self.get_default_image();
+                self.selected_champion = None;
                 Command::none()
             }
             Message::CounterAdded(obj, ms) => {
@@ -295,6 +381,21 @@ impl Application for MatchupTool {
                 Command::none()
             }
             Message::ChampToAddClosed => {
+                Command::none()
+            }
+            Message::ImportOldData(pathstr) => {
+                let path = PathBuf::from(pathstr);
+                println!("{}",path.display());
+                matchup_data_reader::import_old_data_file(&mut self.champion_obj_array, path);
+                write_file(export_champ_to_raw(&self.champion_obj_array));
+                match self.selected_champion {
+                    Some(champ) => self.update(Message::Selected(champ)),
+                    None => self.update(Message::Selected(ChampEnum::Aatrox)),
+                }
+                
+            }
+            Message::OldFileLocationChanged(ofl) => {
+                self.old_file_location_string = ofl;
                 Command::none()
             }
             
