@@ -1,11 +1,11 @@
 # FeOH Matchup Tool
 A League of Legends Matchup Management Tool developed in Rust using [Iced](https://iced.rs/).
 
-While most LoL Matchup Tools are based on statistics and winrates of the champions against each other, this information may not always reflect the current skill level, or champion proficiency of the player. For example, champions like Akali often have catastrophical winrates against most champions, even though the matchups are more than playable for an experienced Akali player.
+What does that mean? Essentially, it is a glorified table. FeOH MT simply allows you to save personal counters for every champion in League of Legends, but in an efficient and aesthetic way!
+
+While most LoL Matchup Sites are based on statistics and winrates of the champions against each other, this information may not always reflect the current skill level, or champion proficiency of the player. For example, champions like Akali often have catastrophical winrates against most champions, even though the matchups are more than playable for an experienced Akali player.
 
 Thus, this is a matchup tool solely for your own matchup experience. With this tool, you will be able to save matchups and counters in an efficient manner, with a distinction in matchup difficulty in three different levels.
-
-But, since only your own experiences are taken into account, the tool will be empty from the start, with the ability to fill in counters and matchups step by step.
 
 ## How to install
 1. Install [Rust and Cargo](https://www.rust-lang.org/tools/install)
