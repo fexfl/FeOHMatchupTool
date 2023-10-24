@@ -7,7 +7,7 @@ use iced::{Alignment, Element, Application, Length, Command, Renderer};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use crate::matchup_data_reader::champion_struct::{Champion, MatchupSafety, export_champ_to_raw, get_images_with_ownership};
-use crate::matchup_data_reader::{read_file as read_file, write_file, self};
+use crate::matchup_data_reader::{read_file as read_file, write_file, self, DataFormat};
 
 pub struct MatchupTool {
     champions: combo_box::State<ChampEnum>,
@@ -22,6 +22,7 @@ pub struct MatchupTool {
     counters_images: Vec<image::Handle>,
     c_loaded: CountersLoaded,
     old_file_location_string: String,
+    selected_data_format: Option<DataFormat>,
 }
 
 pub enum CountersLoaded {
@@ -68,8 +69,9 @@ pub enum Message {
     MatchupSafetySelected(MatchupSafety),
     ChampToAddSelected(ChampEnum),
     ChampToAddClosed,
-    ImportOldData(String),
+    ImportData(String),
     OldFileLocationChanged(String),
+    DataFormatSelected(DataFormat),
 }
 
 #[derive(Debug, Clone)]
@@ -105,6 +107,7 @@ impl Application for MatchupTool {
             counters_images: vec![],
             c_loaded: CountersLoaded::Loaded,
             old_file_location_string: "Location to import".to_string(),
+            selected_data_format: None,
         },
         Command::none())
     }
@@ -247,7 +250,8 @@ impl Application for MatchupTool {
         let old_data_file_location_input: iced::widget::TextInput<'_, Message, Renderer> = text_input("Location to import", ofl)
         .on_input(Message::OldFileLocationChanged)
         .width(250);
-        
+        let pick_list_data: iced::widget::PickList<'_, DataFormat, Message, Renderer> = pick_list(&DataFormat::ALL[..], self.selected_data_format, Message::DataFormatSelected)
+        .placeholder("Data Format");
 
         let content = column![
             row![
@@ -272,7 +276,8 @@ impl Application for MatchupTool {
             row![
                 horizontal_space(685),
                 old_data_file_location_input,
-                button("Import old data format file").on_press(Message::ImportOldData(ofl.to_string())),
+                pick_list_data,
+                button("Import data file").on_press(Message::ImportData(ofl.to_string())),
             ]
             .align_items(Alignment::Center)
             .spacing(10)
@@ -383,19 +388,34 @@ impl Application for MatchupTool {
             Message::ChampToAddClosed => {
                 Command::none()
             }
-            Message::ImportOldData(pathstr) => {
-                let path = PathBuf::from(pathstr);
-                println!("{}",path.display());
-                matchup_data_reader::import_old_data_file(&mut self.champion_obj_array, path);
-                write_file(export_champ_to_raw(&self.champion_obj_array));
-                match self.selected_champion {
-                    Some(champ) => self.update(Message::Selected(champ)),
-                    None => self.update(Message::Selected(ChampEnum::Aatrox)),
+            Message::ImportData(pathstr) => {
+                match self.selected_data_format {
+                    Some(df) => {
+                        let path = PathBuf::from(pathstr);
+                        println!("{}",path.display());
+                        match df {
+                            DataFormat::FeohDataFormat => matchup_data_reader::import_feoh_data_file(&mut self.champion_obj_array, path),
+                            DataFormat::OldDataFormat => matchup_data_reader::import_old_data_file(&mut self.champion_obj_array, path),
+                        }
+                        write_file(export_champ_to_raw(&self.champion_obj_array));
+                        match self.selected_champion {
+                            Some(champ) => self.update(Message::Selected(champ)),
+                            None => self.update(Message::Selected(ChampEnum::Aatrox)),
+                        }
+                    }
+                    None => {
+                        println!("Error - no data format selected!");
+                        Command::none()
+                    }
                 }
                 
             }
             Message::OldFileLocationChanged(ofl) => {
                 self.old_file_location_string = ofl;
+                Command::none()
+            }
+            Message::DataFormatSelected(df) => {
+                self.selected_data_format = Some(df);
                 Command::none()
             }
             

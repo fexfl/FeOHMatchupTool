@@ -72,3 +72,61 @@ pub fn import_old_data_file(champvec: &mut Vec<champion_struct::Champion>, path:
         }
     }
 }
+
+pub fn import_feoh_data_file(champvec: &mut Vec<champion_struct::Champion>, path: PathBuf) {
+    println!("Importing FeOH data file!");
+    let data = fs::read_to_string(path);
+    match data {
+        Ok(strin) => {
+            let format_array: Vec<champion_struct::Champion> = champion_struct::transform_raw_to_champ(serde_json::from_str(&strin).expect("JSON was not well formatted"));
+
+            // Iterate over champions
+            for champ in champvec {
+                let equiv_idx = format_array.iter().position(|champ_import| champ_import.name == champ.name);
+                let equiv = match equiv_idx {
+                    Some(eq) => &format_array[eq],
+                    None => continue,
+                };
+                for (cntr_import, ms_import) in &equiv.counters {
+                    #[allow(unused_parens)]
+                    if (
+                        champ.counters.contains(&(cntr_import.clone(),champion_struct::MatchupSafety::Safe)) 
+                        || champ.counters.contains(&(cntr_import.clone(),champion_struct::MatchupSafety::Normal))
+                        || champ.counters.contains(&(cntr_import.clone(),champion_struct::MatchupSafety::Playable))
+                    ) {continue;}
+                    champ.counters.push((cntr_import.clone(), *ms_import));
+                }
+            }
+        },
+        Err(_err) => {
+            println!("Could not open file!");
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum DataFormat {
+    #[default]
+    FeohDataFormat,
+    OldDataFormat,
+}
+
+impl DataFormat {
+    pub const ALL: [DataFormat; 2] = [
+        DataFormat::FeohDataFormat,
+        DataFormat::OldDataFormat,
+    ];
+}
+
+impl std::fmt::Display for DataFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                DataFormat::FeohDataFormat => "FeOH Data Format",
+                DataFormat::OldDataFormat => "Old Data Format",
+            }
+        )
+    }
+}
